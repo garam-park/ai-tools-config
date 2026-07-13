@@ -1,0 +1,25 @@
+# macOS metadata
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Extended attributes (xattr 등)
+*.xattr
+
+# 임시 백업
+*.bak
+*.tmp
+*.swp
+*~
+
+# 다른 도구/환경이 만든 노이즈
+.idea/
+.vscode/
+.fleet/
+*.log
+
+# 향후 비밀값/로컬 전용 파일 안전망 (실수로 추가되어도 추적 안 됨)
+.env
+.env.local
+*.local
