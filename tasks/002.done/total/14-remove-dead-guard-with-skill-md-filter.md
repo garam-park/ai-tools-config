@@ -1,10 +1,10 @@
 # 14. install-skills.sh — 죽은 가드 제거 + SKILL.md 필터
 
 ## 상태
-- [ ] 시작 전
-- [ ] 적용
-- [ ] 검증
-- [ ] 완료
+- [x] 시작 전
+- [x] 적용
+- [x] 검증
+- [x] 완료
 
 ## 우선순위
 ⚪ **P3 — 셸 견고성 + 구조 개선**
@@ -39,9 +39,9 @@ for skill_dir in "$SRC_DIR"/*/; do
 ```
 
 ## 완료 조건
-- [ ] 죽은 `install-skills.sh` 비교 가드 제거
-- [ ] `SKILL.md`가 없는 디렉토리는 링크되지 않음
-- [ ] `paced-explainer`는 정상적으로 링크됨
+- [x] 죽은 `install-skills.sh` 비교 가드 제거
+- [x] `SKILL.md`가 없는 디렉토리는 링크되지 않음
+- [x] `paced-explainer`는 정상적으로 링크됨
 
 ## 검증
 ```sh
