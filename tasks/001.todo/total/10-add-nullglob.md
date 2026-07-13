@@ -9,6 +9,9 @@
 ## 우선순위
 ⚪ **P3 — 셸 견고성**
 
+## 보강 참조
+- ← [24-empty-srcdir-warning.md](24-empty-srcdir-warning.md) — 같은 커밋에 묶어 적용 권장
+
 ## 제안 모델
 - ✅ claude ([10-add-nullglob.md](../claude/10-add-nullglob.md)) — 구체적
 - ✅ codex ([02-fix-skill-source-discovery.md](../codex/02-fix-skill-source-discovery.md)) — 간략

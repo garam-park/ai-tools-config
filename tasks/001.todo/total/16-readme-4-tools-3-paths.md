@@ -9,6 +9,9 @@
 ## 우선순위
 ⚪ **P3 — 문서**
 
+## 보강 참조
+- → [30-readme-tool-table-script-source.md](30-readme-tool-table-script-source.md) — 같은 커밋에 묶어 적용 권장
+
 ## 제안 모델
 - ✅ claude ([13-readme-4-tools-3-paths.md](../claude/13-readme-4-tools-3-paths.md))
 - ❌ codex

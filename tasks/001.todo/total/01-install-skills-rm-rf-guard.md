@@ -9,6 +9,9 @@
 ## 우선순위
 🔴 **P1 — 데이터 손실 위험**
 
+## 보강 참조
+- ← [22-install-skills-partial-failure-handling.md](22-install-skills-partial-failure-handling.md) — 같은 커밋에 묶어 적용 권장
+
 ## 제안 모델
 - ✅ claude ([01-guard-destructive-skill-link.md](../claude/01-guard-destructive-skill-link.md), [02-guard-rm-rf-to-symlink-only.md](../claude/02-guard-rm-rf-to-symlink-only.md))
 - ✅ codex ([01-safe-skill-collision-handling.md](../codex/01-safe-skill-collision-handling.md))

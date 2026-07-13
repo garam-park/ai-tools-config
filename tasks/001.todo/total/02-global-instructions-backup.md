@@ -9,6 +9,11 @@
 ## 우선순위
 🔴 **P1 — 데이터 손실 위험**
 
+## 보강 참조
+- ← [23-global-instructions-dest-is-symlink.md](23-global-instructions-dest-is-symlink.md) — dest가 심볼릭 링크일 때 동작
+- ← [25-simplify-auto-generated-marker.md](25-simplify-auto-generated-marker.md) — 마커 단순화
+- 위 2건 + 작업 02를 한 커밋에 묶어 적용 권장
+
 ## 제안 모델
 - ✅ claude ([01-backup-before-overwrite-global-instructions.md](../claude/01-backup-before-overwrite-global-instructions.md))
 - ✅ codex ([04-protect-global-instructions.md](../codex/04-protect-global-instructions.md))
