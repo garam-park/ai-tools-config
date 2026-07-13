@@ -46,8 +46,10 @@ if [[ ${#skill_dirs[@]} -eq 0 ]]; then
 fi
 
 # 동기화 대상 도구들의 개인용 스킬 경로
+# (Copilot VS Code의 개인 스킬 경로는 ~/.copilot/skills 로 Claude Code와 별개)
 TARGETS=(
-  "$HOME/.claude/skills"             # Claude Code + GitHub Copilot (VS Code)
+  "$HOME/.claude/skills"             # Claude Code
+  "$HOME/.copilot/skills"            # GitHub Copilot (VS Code) 개인 스킬
   "$HOME/.codex/skills"              # Codex
   "$HOME/.config/opencode/skills"    # OpenCode
 )
@@ -95,6 +97,7 @@ done
 
 echo
 echo "완료 (링크 $linked_count개). 다음 도구에서 사용 가능:"
-echo "  - Claude Code, GitHub Copilot (VS Code): ~/.claude/skills"
+echo "  - Claude Code: ~/.claude/skills"
+echo "  - GitHub Copilot (VS Code): ~/.copilot/skills"
 echo "  - Codex: ~/.codex/skills"
 echo "  - OpenCode: ~/.config/opencode/skills"

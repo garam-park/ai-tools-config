@@ -1,10 +1,10 @@
 # 04. 외부 도구 경로/파일 검증
 
 ## 상태
-- [ ] 시작 전
-- [ ] 조사
-- [ ] 결과 반영 (05, 09)
-- [ ] 완료
+- [x] 시작 전
+- [x] 조사
+- [x] 결과 반영 (05, 09)
+- [x] 완료
 
 ## 우선순위
 🟡 **P2 — 다른 P2 작업(05, 09)의 전제**
@@ -41,9 +41,23 @@ claude와 codex는 **같은 항목에 대해 서로 다른 결론**을 내렸다
 
 | 항목 | 확인 결과 (참/거짓) | 출처 | 수정 필요 |
 |------|---------------------|------|----------|
-| 4-A Copilot 스킬 경로 |  |  |  |
-| 4-B OpenCode AGENTS.md |  |  |  |
-| 4-C oh-my-openagent.json |  |  |  |
+| 4-A Copilot 스킬 경로 | **거짓** — VS Code Copilot 개인 스킬은 `~/.copilot/skills`(또는 `~/.agents/skills`). `~/.claude/skills`는 Claude Code 경로이며, VS Code는 이를 개인 스킬로 자동 인식하지 않음(프로젝트 레벨 `.claude/skills`만 자동 인식, 또는 `chat.agentSkillsLocations` 설정 필요). Copilot **CLI**는 `~/.claude/skills`도 검색함. | GitHub Docs "About agent skills", allaboutken 가이드 | **예** — codex안 채택: TARGETS에 `~/.copilot/skills` 추가 (작업 05) |
+| 4-B OpenCode AGENTS.md | **참** — `~/.config/opencode/AGENTS.md`가 전역 규칙 파일로 유효 | OpenCode Docs "Rules" | 아니오 |
+| 4-C oh-my-openagent.json | **미검증** — 서드파티 플러그인(oh-my-openagent) 설정으로 공식 외부 문서로 확인 불가. 사용자 환경 고유 정보로 간주하고 `opencode.md` 서술 유지 | (외부 문서 없음) | 아니오 (현행 유지) |
+
+## 검증 결과 요약 (2026-07-13)
+
+- **4-A 결론**: Copilot(VS Code)의 개인 스킬 경로는 Claude Code와 **공유되지 않는다**. codex 모델의 판단이 정확했다.
+  → 작업 **05**에서 `install-skills.sh`의 TARGETS에 `~/.copilot/skills` 한 줄을 추가하고,
+    README·SKILL.md의 "Claude와 동일 위치 공유" 서술을 "Copilot 별도 경로"로 정정한다.
+  → 결과적으로 "4개 도구 → 4개 경로"가 된다(작업 16·30에 반영).
+- **4-B 결론**: 현행 `~/.config/opencode/AGENTS.md` 그대로 유지.
+- **4-C 결론**: 외부 검증 불가한 플러그인 설정이므로 `opencode.md` 변경 없음.
+
+출처:
+
+- GitHub Docs — About agent skills: <https://docs.github.com/en/copilot/concepts/agents/about-agent-skills>
+- OpenCode Docs — Rules (AGENTS.md): <https://opencode.ai/docs/rules/>
 
 ## 변경 파일
 - 결과에 따라 [README.md](../../README.md), [SKILL.md](../../skills/paced-explainer/SKILL.md), [opencode.md](../../global-instructions/opencode.md) 업데이트
