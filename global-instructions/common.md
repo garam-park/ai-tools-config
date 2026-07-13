@@ -24,3 +24,11 @@
   - 여러 무관한 변경이 섞이지 않도록 분리해서 커밋한다
   - push는 사용자가 명시적으로 요청할 때만 한다
 - 큰 변경은 작은 단계로 나눠서 진행한다
+
+### 작업 카드 참조 토큰 (운영 규약)
+
+- 작업 카드를 참조하는 경우 커밋 메시지에 다음 토큰을 포함한다:
+  - 단일 작업: `(task NN)` — 예: `fix(install-skills): guard rm -rf (task 01)`
+  - 묶음 작업: `(tasks NN,MM)` — 예: `refactor(install-skills): harden guards (tasks 01,22)`
+  - 작업 디렉토리 `tasks/001.todo/total/` 의 카드 번호와 일치시킨다
+  - 이 규약은 `git log --grep="task "` 같은 추적과 작업 카드 ↔ 커밋 매핑을 가능하게 한다
