@@ -1,10 +1,10 @@
 # 17. README 트리 다이어그램에 agents/, references/ 추가
 
 ## 상태
-- [ ] 시작 전
-- [ ] 적용
-- [ ] 검증
-- [ ] 완료
+- [x] 시작 전
+- [x] 적용
+- [x] 검증
+- [x] 완료
 
 ## 우선순위
 ⚪ **P3 — 문서**
@@ -41,8 +41,8 @@ skills/paced-explainer/
 ```
 
 ## 완료 조건
-- [ ] 트리가 실제 tracked 파일과 일치
-- [ ] (08 적용 후) `install-global-instructions.sh`와 `global-instructions/`도 함께 추가됨
+- [x] 트리가 실제 tracked 파일과 일치
+- [x] (08 적용 후) `install-global-instructions.sh`와 `global-instructions/`도 함께 추가됨
 
 ## 검증
 ```sh

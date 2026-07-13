@@ -1,10 +1,10 @@
 # 26. README 코드 펜스 언어 태그 (sh → bash)
 
 ## 상태
-- [ ] 시작 전
-- [ ] 적용
-- [ ] 검증
-- [ ] 완료
+- [x] 시작 전
+- [x] 적용
+- [x] 검증
+- [x] 완료
 
 ## 우선순위
 ⚪ **P3 — 문서 정확성**
@@ -48,8 +48,8 @@ git clone git@github.com:garam-park/ai-tools-config.git ~/ai-tools-config
 - (있다면) "동기화되는 도구" 아래의 예시
 
 ## 완료 조건
-- [ ] README의 모든 셸 코드 블록이 `bash` 펜스로 표기
-- [ ] GitHub에서 bash 하이라이팅이 정상 동작
+- [x] README의 모든 셸 코드 블록이 `bash` 펜스로 표기
+- [x] GitHub에서 bash 하이라이팅이 정상 동작
 
 ## 검증
 ```sh

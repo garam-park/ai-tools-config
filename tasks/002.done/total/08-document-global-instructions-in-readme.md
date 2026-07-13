@@ -1,10 +1,10 @@
 # 08. README에 global-instructions 기능 문서화
 
 ## 상태
-- [ ] 시작 전
-- [ ] 적용
-- [ ] 검증
-- [ ] 완료
+- [x] 시작 전
+- [x] 적용
+- [x] 검증
+- [x] 완료
 
 ## 우선순위
 🟡 **P2 — 문서 정합성**
@@ -48,8 +48,8 @@ bash ~/ai-tools-config/install-global-instructions.sh
 (`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`)로 동기화.
 
 ## 완료 조건
-- [ ] 구성 트리가 실제 tracked 파일과 일치
-- [ ] 온보딩 단계만 따라 하면 스킬 + 글로벌 지침이 모두 설치됨
+- [x] 구성 트리가 실제 tracked 파일과 일치
+- [x] 온보딩 단계만 따라 하면 스킬 + 글로벌 지침이 모두 설치됨
 
 ## 커밋 메시지 (예시)
 ```
