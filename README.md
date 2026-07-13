@@ -1,17 +1,18 @@
-# garam/dotfiles
+# garam-park/ai-tools-config
 
-개인용 dotfiles 리포. AI 코딩 도구 스킬과 동기화 스크립트를 관리한다.
+개인용 AI 코딩 도구 스킬 묶음. Claude Code, GitHub Copilot (VS Code), Codex, OpenCode 네 도구에서 동일하게 동작하는 스킬과 동기화 스크립트를 관리한다.
 
 ## 구성
 
 ```
-dotfiles/
-├── install-skills.sh           # 4개 도구에 스킬 심볼릭 링크 생성 (멱등)
+ai-tools-config/
+├── install-skills.sh                          # 4개 도구에 스킬 심볼릭 링크 생성 (멱등)
 ├── skills/
-│   └── paced-explainer/        # Claude Code, GitHub Copilot, Codex, OpenCode 공통 스킬
+│   └── paced-explainer/                       # 4개 도구 공통 스킬
 │       ├── SKILL.md
 │       ├── agents/openai.yaml
 │       └── references/depth-patterns.md
+├── .gitignore
 └── README.md
 ```
 
@@ -19,13 +20,13 @@ dotfiles/
 
 ```sh
 # 1) 리포 clone
-git clone <repo-url> ~/dotfiles
+git clone git@github.com:garam-park/ai-tools-config.git ~/ai-tools-config
 
-# 2) 스킬을 실제 위치에 동기화 (rsync로 --delete로 원본 동기화 유지)
-rsync -a --delete ~/dotfiles/skills/ ~/.local/share/skills/
+# 2) 스킬을 실제 위치에 동기화 (rsync --delete로 원본 동기화 유지)
+rsync -a --delete ~/ai-tools-config/skills/ ~/.local/share/skills/
 
 # 3) 스크립트 동기화
-cp ~/dotfiles/install-skills.sh ~/.local/share/skills/install-skills.sh
+cp ~/ai-tools-config/install-skills.sh ~/.local/share/skills/install-skills.sh
 chmod +x ~/.local/share/skills/install-skills.sh
 
 # 4) 4개 도구 경로에 심볼릭 링크 생성
