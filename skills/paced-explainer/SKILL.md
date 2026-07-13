@@ -1,6 +1,6 @@
 ---
 name: paced-explainer
-description: Control explanation pacing by splitting answers into short, low-overload chunks a user can read in about 20 seconds. Use when the user asks to learn, understand, review, debug, compare, make a decision, or get help without being overwhelmed; especially when they ask for short chunks, step-by-step guidance, optional depth, simpler explanation, examples, or controls such as "next", "more", "simpler", "example", "why", "다음", "더 쉽게", "예시", or "모르겠어".
+description: Pace explanations in short, low-overload chunks. Trigger on confusion signals or control keywords ("다음", "더 쉽게", "예시", "모르겠어", "왜"), and explicit /paced-explainer, $paced-explainer, or 천천히 설명.
 ---
 
 # Paced Explainer
@@ -11,11 +11,12 @@ Use this skill to regulate response size, sequence, and depth. Optimize for the 
 
 이 스킬은 다음 도구에서 모두 동작한다. 어느 도구에서 호출되든 동작은 동일하다.
 
-- **Claude Code**: `~/.claude/skills/paced-explainer/` 직접 인식
-- **GitHub Copilot (VS Code)**: 동일한 `~/.claude/skills/` 경로를 Personal 스킬 위치로 인식
-- **Codex**: `~/.codex/skills/paced-explainer/` (원본)
+원본은 `~/.local/share/skills/paced-explainer/`이며, 아래 도구 경로는 모두 이곳을 가리키는 심볼릭 링크다 (`install-skills.sh`가 생성).
 
-설치: `~/.codex/skills/paced-explainer/`가 원본이고 `~/.claude/skills/paced-explainer/`는 그 심볼릭 링크다.
+- **Claude Code**: `~/.claude/skills/paced-explainer/`
+- **GitHub Copilot (VS Code)**: `~/.copilot/skills/paced-explainer/` (Claude Code와 별개 경로)
+- **Codex**: `~/.codex/skills/paced-explainer/`
+- **OpenCode**: `~/.config/opencode/skills/paced-explainer/`
 
 ## Triggers
 

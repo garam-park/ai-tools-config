@@ -1,11 +1,11 @@
 # 09. SKILL.md Platforms 섹션 정정 (원본/심링크 모델 + OpenCode)
 
 ## 상태
-- [ ] 시작 전
-- [ ] 방안 결정 (작업 04 결과에 의존)
-- [ ] 적용
-- [ ] 검증
-- [ ] 완료
+- [x] 시작 전
+- [x] 방안 결정 (작업 04 결과에 의존)
+- [x] 적용
+- [x] 검증
+- [x] 완료
 
 ## 우선순위
 🟡 **P2 — 문서 정합성**
@@ -43,9 +43,9 @@ L12는 "다음 도구에서 모두 동작한다"면서 목록에 Claude Code / C
 > Copilot 경로는 작업 **04, 05** 결과에 따라 조정. (Copilot이 별도 경로면 그 줄 분리)
 
 ## 완료 조건
-- [ ] 원본이 `~/.local/share/skills/`로 서술되고 모든 도구 경로가 심링크로 설명됨
-- [ ] OpenCode가 Platforms 목록에 포함됨
-- [ ] `install-skills.sh`의 TARGETS 및 완료 메시지와 서술이 일치
+- [x] 원본이 `~/.local/share/skills/`로 서술되고 모든 도구 경로가 심링크로 설명됨
+- [x] OpenCode가 Platforms 목록에 포함됨
+- [x] `install-skills.sh`의 TARGETS 및 완료 메시지와 서술이 일치
 
 ## 커밋 메시지 (예시)
 ```

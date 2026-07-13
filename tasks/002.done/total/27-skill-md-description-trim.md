@@ -1,10 +1,10 @@
 # 27. SKILL.md — description 필드 축약 (트리거 신호만)
 
 ## 상태
-- [ ] 시작 전
-- [ ] 적용
-- [ ] 검증
-- [ ] 완료
+- [x] 시작 전
+- [x] 적용
+- [x] 검증
+- [x] 완료
 
 ## 우선순위
 ⚪ **P3 — 토큰 효율**
@@ -47,9 +47,9 @@ description: Short, paced chunked explanations. Trigger on confusion signals or 
 - "review, debug, compare, make a decision" 같은 광범위 용도 (스킬이 자동으로 적절히 처리)
 
 ## 완료 조건
-- [ ] description이 50단어 이내로 축약
-- [ ] 핵심 트리거 신호가 모두 보존됨
-- [ ] 본문의 Triggers / User Controls 섹션은 변경하지 않음 (상세 규칙은 본문 유지)
+- [x] description이 50단어 이내로 축약
+- [x] 핵심 트리거 신호가 모두 보존됨
+- [x] 본문의 Triggers / User Controls 섹션은 변경하지 않음 (상세 규칙은 본문 유지)
 
 ## 검증
 ```sh
