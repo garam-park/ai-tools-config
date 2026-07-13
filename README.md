@@ -22,8 +22,8 @@ ai-tools-config/
 # 1) 리포 clone
 git clone git@github.com:garam-park/ai-tools-config.git ~/ai-tools-config
 
-# 2) 스킬을 실제 위치에 동기화 (rsync --delete로 원본 동기화 유지)
-rsync -a --delete ~/ai-tools-config/skills/ ~/.local/share/skills/
+# 2) 스킬을 실제 위치에 동기화 (--delete 없이: 로컬 전용 스킬/스크립트 보존)
+rsync -a ~/ai-tools-config/skills/ ~/.local/share/skills/
 
 # 3) 스크립트 동기화
 cp ~/ai-tools-config/install-skills.sh ~/.local/share/skills/install-skills.sh
