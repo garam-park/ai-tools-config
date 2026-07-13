@@ -64,11 +64,11 @@ bash ~/ai-tools-config/install-global-instructions.sh
 `install-skills.sh`는 4개 도구를 각각의 개인 스킬 경로로 동기화한다 (4개 도구 → 4개 경로).
 
 | 도구 | 경로 | 동기화 코드 | 비고 |
-|------|------|-----------|------|
-| Claude Code | `~/.claude/skills/` | `TARGETS[0]` | |
+| --- | --- | --- | --- |
+| Claude Code | `~/.claude/skills/` | `TARGETS[0]` | — |
 | GitHub Copilot (VS Code) | `~/.copilot/skills/` | `TARGETS[1]` | Claude Code와 별개 경로 |
-| Codex | `~/.codex/skills/` | `TARGETS[2]` | |
-| OpenCode | `~/.config/opencode/skills/` | `TARGETS[3]` | |
+| Codex | `~/.codex/skills/` | `TARGETS[2]` | — |
+| OpenCode | `~/.config/opencode/skills/` | `TARGETS[3]` | — |
 
 > Copilot **CLI**는 `~/.claude/skills`도 검색하지만, VS Code 개인 스킬 기본 경로는 `~/.copilot/skills`다.
 
@@ -80,6 +80,17 @@ bash ~/ai-tools-config/install-global-instructions.sh
 4. 기존 항목이 스크립트가 만든 심링크면 교체하고, 사용자가 만든 실제 파일/디렉토리는 건드리지 않는다
    (강제 교체가 필요하면 `--force`: 백업 후 교체)
 5. 여러 번 실행해도 안전 (멱등)
+
+## 테스트
+
+설치 스크립트는 실제 홈 디렉토리를 건드리지 않고 임시 `HOME`에서 검증한다.
+
+```bash
+bash tests/run.sh
+```
+
+- 심볼릭 링크가 동작하는 환경(WSL / Linux / macOS)에서 실행한다. 링크 미지원 환경에서는 자동 스킵된다.
+- GitHub Actions(`.github/workflows/ci.yml`)가 push/PR마다 ShellCheck + 위 설치 테스트를 실행한다.
 
 ## 작업 카드 (tasks/)
 

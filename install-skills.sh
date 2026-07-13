@@ -14,6 +14,7 @@
 #   2) chmod +x install-skills.sh && ./install-skills.sh
 
 set -euo pipefail
+shopt -s inherit_errexit 2>/dev/null || true   # bash 4.4+: command substitution도 errexit 상속
 shopt -s nullglob
 
 FORCE=0
@@ -92,21 +93,23 @@ for target in "${TARGETS[@]}"; do
   fi
 
   # 원본에서 사라진 스킬의 관리 링크만 정리 (사용자 소유 항목은 보존)
-  for _name in ${prev_names[@]+"${prev_names[@]}"}; do
-    _contains "$_name" ${current_names[@]+"${current_names[@]}"} && continue
-    stale="$target/$_name"
-    if [[ -L "$stale" ]]; then
-      _tgt="$(readlink "$stale" 2>/dev/null || true)"
-      # 스크립트가 만든 링크는 정확히 $SRC_DIR/<name>을 가리킨다. 그 외 사용자 링크는 보존.
-      if [[ "$_tgt" == "$SRC_DIR/$_name" ]]; then
-        rm -f "$stale" && echo "removed stale link: $stale"
-      else
-        echo "skip stale: $stale 은(는) 스크립트가 만든 링크가 아님 (→ $_tgt)" >&2
+  if [[ ${#prev_names[@]} -gt 0 ]]; then
+    for _name in "${prev_names[@]}"; do
+      _contains "$_name" "${current_names[@]}" && continue
+      stale="$target/$_name"
+      if [[ -L "$stale" ]]; then
+        _tgt="$(readlink "$stale" 2>/dev/null || true)"
+        # 스크립트가 만든 링크는 정확히 $SRC_DIR/<name>을 가리킨다. 그 외 사용자 링크는 보존.
+        if [[ "$_tgt" == "$SRC_DIR/$_name" ]]; then
+          rm -f "$stale" && echo "removed stale link: $stale"
+        else
+          echo "skip stale: $stale 은(는) 스크립트가 만든 링크가 아님 (→ $_tgt)" >&2
+        fi
+      elif [[ -e "$stale" ]]; then
+        echo "skip stale: $stale 은(는) 실제 파일/디렉토리라 제거하지 않음" >&2
       fi
-    elif [[ -e "$stale" ]]; then
-      echo "skip stale: $stale 은(는) 실제 파일/디렉토리라 제거하지 않음" >&2
-    fi
-  done
+    done
+  fi
 
   for skill_dir in "${skill_dirs[@]}"; do
     name="$(basename "$skill_dir")"

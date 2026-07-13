@@ -13,6 +13,7 @@
 #   - 같은 파일시스템 tmp + mv 로 원자적 교체, 실패 시 tmp 정리(trap)
 
 set -euo pipefail
+shopt -s inherit_errexit 2>/dev/null || true   # bash 4.4+: command substitution도 errexit 상속
 
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC="$SRC_DIR/global-instructions"
