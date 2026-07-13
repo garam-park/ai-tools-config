@@ -53,7 +53,8 @@ resolve_symlink_target() {
 
 next_backup_path() {
   local original="$1"
-  local candidate="$original.bak.$(date +%Y%m%d%H%M%S)"
+  local candidate
+  candidate="$original.bak.$(date +%Y%m%d%H%M%S)"
   local suffix=0
 
   while [[ -e "$candidate" || -L "$candidate" ]]; do
