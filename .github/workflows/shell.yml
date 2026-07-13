@@ -1,20 +1,30 @@
-name: Shell installers
+name: CI
 
 on:
   push:
+    branches: [main, develop]
   pull_request:
 
 permissions:
   contents: read
 
 jobs:
-  test:
+  shellcheck:
+    name: ShellCheck
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install ShellCheck
-        run: sudo apt-get update && sudo apt-get install -y shellcheck
-      - name: Run installer tests
-        run: bash tests/installers_test.sh
       - name: Run ShellCheck
-        run: shellcheck install-skills.sh install-global-instructions.sh tests/installers_test.sh
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          severity: warning
+          additional_files: install-skills.sh install-global-instructions.sh tests/installers_test.sh
+
+  test:
+    name: Installer tests
+    needs: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run installer tests (isolated HOME)
+        run: bash tests/installers_test.sh

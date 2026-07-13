@@ -1,6 +1,6 @@
 ---
 name: paced-explainer
-description: Short, paced chunked explanations. Trigger on confusion signals or control keywords ("다음", "더 쉽게", "예시", "모르겠어"), and explicit /paced-explainer or $paced-explainer.
+description: Pace explanations in short, low-overload chunks. Trigger on confusion signals or control keywords ("다음", "더 쉽게", "예시", "모르겠어", "왜"), and explicit /paced-explainer, $paced-explainer, or 천천히 설명.
 ---
 
 # Paced Explainer
@@ -16,7 +16,7 @@ Use this skill to regulate response size, sequence, and depth. Optimize for the 
 - **Codex**: `~/.codex/skills/paced-explainer/`
 - **OpenCode**: `~/.config/opencode/skills/paced-explainer/`
 
-`agents/openai.yaml`은 OpenAI 계열 도구가 표시 이름과 기본 프롬프트를 읽을 때 쓰는 메타데이터이며, 기본 프롬프트는 특정 호출 문법에 의존하지 않는다.
+`agents/codex.yaml`은 Codex 전용 호출 메타데이터로, `$paced-explainer` 문법을 사용한다. ChatGPT/Custom GPT 등 다른 OpenAI 계열 클라이언트는 이 문법을 지원하지 않으며, 표시 이름·설명만 참고한다.
 
 ## Triggers
 

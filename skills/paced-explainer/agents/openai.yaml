@@ -1,4 +1,0 @@
-interface:
-  display_name: "천천히 설명"
-  short_description: "읽기 쉬운 단계로 짧게 설명"
-  default_prompt: "내가 따라갈 수 있도록 이 스킬로 작은 단계씩 설명해줘."

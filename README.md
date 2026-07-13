@@ -18,13 +18,13 @@ ai-tools-config/
 │       ├── SKILL.md
 │       ├── agents/
 │       │   ├── README.md
-│       │   └── openai.yaml
+│       │   └── codex.yaml
 │       └── references/
 │           └── depth-patterns.md
 ├── tests/
 │   └── installers_test.sh
 ├── tasks/                                     # 추적되는 작업 카드와 상태 보드
-├── .github/workflows/shell.yml                # 설치 테스트 + ShellCheck CI
+├── .github/workflows/shell.yml                # ShellCheck + 설치 테스트 CI
 ├── .gitignore
 └── README.md
 ```
@@ -58,7 +58,7 @@ bash ~/ai-tools-config/install-global-instructions.sh
 2. 위 설치 절차의 2~3단계를 다시 실행한다.
 3. `install-skills.sh`는 `SKILL.md`가 있는 폴더만 원본 스킬로 인식한다.
 
-실제 파일이나 디렉토리가 대상 경로에 이미 있으면 덮어쓰거나 삭제하지 않고 경고한다. 기존 심볼릭 링크만 안전하게 교체하며, 일부 링크 처리에 실패해도 나머지를 계속 시도한 뒤 비정상 종료한다.
+실제 파일이나 디렉토리가 대상 경로에 이미 있으면 덮어쓰거나 삭제하지 않고 경고한다 (`--force` 옵션으로 백업 후 강제 교체 가능). 기존 심볼릭 링크만 안전하게 교체하며, 일부 링크 처리에 실패해도 나머지를 계속 시도한 뒤 비정상 종료한다.
 
 ## 동기화되는 도구
 
@@ -82,7 +82,7 @@ bash ~/ai-tools-config/install-global-instructions.sh
 
 1. 스크립트가 있는 폴더(`~/.local/share/skills/`)에서 `SKILL.md`가 있는 하위 폴더를 찾는다.
 2. 네 대상 경로를 준비하고 각 스킬의 심볼릭 링크를 만든다.
-3. 실제 파일·디렉토리와 충돌하면 사용자 항목을 보존하고 경고한다.
+3. 실제 파일·디렉토리와 충돌하면 사용자 항목을 보존하고 경고한다 (`--force` 시 `.bak.<timestamp>` 백업 후 교체).
 4. `${XDG_STATE_HOME:-~/.local/state}/ai-tools-config/install-skills.manifest`에 성공한 관리 링크를 기록한다.
 5. 다음 실행에서 원본이 사라진 관리 링크만 정리한다. 사용자가 바꾼 항목은 보존한다.
 
@@ -96,7 +96,7 @@ bash ~/ai-tools-config/install-global-instructions.sh
 | Codex | `~/.codex/AGENTS.md` | `common.md` + `codex.md` |
 | OpenCode | `~/.config/opencode/AGENTS.md` | `common.md` + `opencode.md` |
 
-마커 없는 기존 파일은 `.bak.<timestamp>`로 백업한다. 자동 생성 파일은 백업 없이 갱신한다. 대상이 심볼릭 링크면 링크 자체를 보존하고 실제 타깃을 백업·갱신한다. 임시 파일은 대상과 같은 디렉토리에 만든 뒤 원자적으로 교체한다.
+마커 없는 기존 파일은 `.bak.<timestamp>`로 백업한다. 자동 생성 파일은 백업 없이 갱신한다. 대상이 심볼릭 링크면 링크 자체를 보존하고 실제 타깃을 백업·갱신한다 (순환 링크 탐지 포함, 최대 40 depth). dangling 심링크는 dest 위치에 직접 쓴다. 임시 파일은 대상과 같은 디렉토리에 만든 뒤 원자적으로 교체한다.
 
 ## 테스트
 

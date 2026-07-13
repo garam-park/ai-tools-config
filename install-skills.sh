@@ -1,27 +1,35 @@
 #!/usr/bin/env bash
 # install-skills.sh
 #
-# 원본: ~/.local/share/skills/<name>/
-# 이 스크립트와 같은 폴더에 있는 스킬을 각 도구의 개인용 경로에 연결한다.
+# 원본: 이 스크립트가 있는 폴더의 skills/<name>/
+# 각 도구의 개인용 스킬 경로에 심볼릭 링크를 만들어 동기화한다.
 # 멱등성 보장: 여러 번 실행해도 같은 결과.
 #
+# 사용자가 손으로 만든 실제 파일/디렉토리는 삭제하지 않는다.
+# 강제 교체가 필요하면 --force (백업 후 교체).
+# 원본에서 사라진 스킬의 관리 링크는 manifest로 추적해 안전히 정리한다.
+#
 # 새 머신에서:
-#   1) skills/의 내용과 이 스크립트를 ~/.local/share/skills/ 아래에 둔다
+#   1) 이 스크립트와 스킬 폴더(SKILL.md 포함)를 ~/.local/share/skills/ 아래에 둔다
 #   2) chmod +x install-skills.sh && ./install-skills.sh
 
 set -euo pipefail
 shopt -s nullglob
-shopt -s inherit_errexit 2>/dev/null || true
+shopt -s inherit_errexit 2>/dev/null || true   # bash 4.4+: command substitution도 errexit 상속
+
+FORCE=0
+[[ "${1:-}" == "--force" ]] && FORCE=1
 
 # 원본 폴더 (이 스크립트가 있는 폴더)
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/ai-tools-config"
 MANIFEST="$STATE_DIR/install-skills.manifest"
 
-# 도구별 개인 스킬 경로. Copilot은 ~/.claude/skills도 읽지만 전용 표준 경로를 쓴다.
+# 도구별 개인 스킬 경로 (4도구 → 4경로)
+# Copilot CLI는 ~/.claude/skills도 읽지만, VS Code Copilot 표준 경로는 ~/.copilot/skills다.
 TARGETS=(
   "$HOME/.claude/skills"             # Claude Code
-  "$HOME/.copilot/skills"            # GitHub Copilot
+  "$HOME/.copilot/skills"            # GitHub Copilot (VS Code)
   "$HOME/.codex/skills"              # Codex
   "$HOME/.config/opencode/skills"    # OpenCode
 )
@@ -108,15 +116,28 @@ for target in "${TARGETS[@]}"; do
     link="$target/$name"
 
     if [[ -L "$link" ]]; then
+      # 기존 심링크는 안전하게 교체 (스크립트가 만든 링크든 사용자 링크든)
       if ! rm -f "$link"; then
         error "기존 링크를 제거할 수 없습니다: $link"
         failures=$((failures + 1))
         continue
       fi
     elif [[ -e "$link" ]]; then
-      warn "$link 은(는) 실제 파일/디렉토리라 덮어쓰지 않습니다."
-      failures=$((failures + 1))
-      continue
+      # 실제 파일/디렉토리: 기본 보호, --force 시 백업 후 교체
+      if [[ "$FORCE" == "1" ]]; then
+        backup="$link.bak.$(date +%Y%m%d%H%M%S)"
+        if mv "$link" "$backup"; then
+          echo "backed up: $link -> $backup"
+        else
+          error "백업 실패로 건너뜀: $link"
+          failures=$((failures + 1))
+          continue
+        fi
+      else
+        warn "$link 은(는) 실제 파일/디렉토리라 덮어쓰지 않습니다 (--force 필요)."
+        failures=$((failures + 1))
+        continue
+      fi
     fi
 
     if ! ln -s "$skill_dir" "$link"; then
