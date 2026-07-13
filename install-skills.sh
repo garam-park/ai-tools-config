@@ -7,6 +7,7 @@
 #
 # 사용자가 손으로 만든 실제 파일/디렉토리는 삭제하지 않는다.
 # 강제 교체가 필요하면 --force (백업 후 교체).
+# 원본에서 사라진 스킬의 관리 링크는 manifest(.skills-manifest)로 추적해 안전히 정리한다.
 #
 # 새 머신에서:
 #   1) 이 스크립트와 스킬 폴더(SKILL.md 포함)를 ~/.local/share/skills/ 아래에 둔다
@@ -45,6 +46,33 @@ if [[ ${#skill_dirs[@]} -eq 0 ]]; then
   exit 1
 fi
 
+# --- 관리 링크 manifest (stale 링크 정리용) ---
+# 스크립트가 만든 심링크 이름을 기록해, 원본에서 사라진 스킬의 링크만 안전히 제거한다.
+# 형식: 스킬 이름 한 줄에 하나. 없거나 손상돼도 다음 실행에서 자가 복구된다.
+MANIFEST="$SRC_DIR/.skills-manifest"
+
+current_names=()
+for skill_dir in "${skill_dirs[@]}"; do
+  current_names+=("$(basename "$skill_dir")")
+done
+
+prev_names=()
+if [[ -f "$MANIFEST" ]]; then
+  while IFS= read -r _line; do
+    [[ -n "$_line" ]] && prev_names+=("$_line")
+  done < "$MANIFEST"
+fi
+
+# 배열에 값이 있는지
+_contains() {
+  local needle="$1"; shift
+  local item
+  for item in "$@"; do
+    [[ "$item" == "$needle" ]] && return 0
+  done
+  return 1
+}
+
 # 동기화 대상 도구들의 개인용 스킬 경로
 # (Copilot VS Code의 개인 스킬 경로는 ~/.copilot/skills 로 Claude Code와 별개)
 TARGETS=(
@@ -62,6 +90,23 @@ for target in "${TARGETS[@]}"; do
     echo "error: $target 를 만들 수 없습니다 — 권한 또는 상위 경로 확인 필요" >&2
     exit 1
   fi
+
+  # 원본에서 사라진 스킬의 관리 링크만 정리 (사용자 소유 항목은 보존)
+  for _name in ${prev_names[@]+"${prev_names[@]}"}; do
+    _contains "$_name" ${current_names[@]+"${current_names[@]}"} && continue
+    stale="$target/$_name"
+    if [[ -L "$stale" ]]; then
+      _tgt="$(readlink "$stale" 2>/dev/null || true)"
+      # 스크립트가 만든 링크는 정확히 $SRC_DIR/<name>을 가리킨다. 그 외 사용자 링크는 보존.
+      if [[ "$_tgt" == "$SRC_DIR/$_name" ]]; then
+        rm -f "$stale" && echo "removed stale link: $stale"
+      else
+        echo "skip stale: $stale 은(는) 스크립트가 만든 링크가 아님 (→ $_tgt)" >&2
+      fi
+    elif [[ -e "$stale" ]]; then
+      echo "skip stale: $stale 은(는) 실제 파일/디렉토리라 제거하지 않음" >&2
+    fi
+  done
 
   for skill_dir in "${skill_dirs[@]}"; do
     name="$(basename "$skill_dir")"
@@ -94,6 +139,9 @@ for target in "${TARGETS[@]}"; do
     fi
   done
 done
+
+# manifest 갱신 (설치 성공 후 현재 스킬 목록 기록)
+printf '%s\n' "${current_names[@]}" > "$MANIFEST"
 
 echo
 echo "완료 (링크 $linked_count개). 다음 도구에서 사용 가능:"
