@@ -1,11 +1,11 @@
 # 31. 작업 상태 보드 (tasks/STATUS.md) 도입
 
 ## 상태
-- [ ] 시작 전
-- [ ] 방안 결정
-- [ ] 적용
-- [ ] 검증
-- [ ] 완료
+- [x] 시작 전
+- [x] 방안 결정
+- [x] 적용
+- [x] 검증
+- [x] 완료
 
 ## 우선순위
 🟦 **운영 개선 — 가시성**
@@ -84,20 +84,20 @@ status: in-progress
 
 ## 상태
 - [x] 시작 전
-- [ ] 적용
+- [x] 적용
 - ...
 ```
 
 `STATUS.md`는 작업 완료 시 [total/README.md](README.md)의 권장 순서를 그대로 옮기되, 진척 상황만 표시한다.
 
 ## 완료 조건
-- [ ] `tasks/STATUS.md` 템플릿 작성
-- [ ] 모든 작업 md에 `started`/`status` 헤더 추가 (또는 명시적으로 추가하지 않기로 결정)
-- [ ] 첫 작업 시작 시 STATUS.md 갱신 정책 합의
+- [x] `tasks/STATUS.md` 템플릿 작성
+- [x] 모든 작업 md에 `started`/`status` 헤더 추가 (또는 명시적으로 추가하지 않기로 결정)
+- [x] 첫 작업 시작 시 STATUS.md 갱신 정책 합의
 
 ## 검증
-- [ ] `tasks/STATUS.md`가 단일 진입점 역할을 하는지
-- [ ] 작업 카드의 체크박스와 STATUS.md의 in-progress가 일치하는지
+- [x] `tasks/STATUS.md`가 단일 진입점 역할을 하는지
+- [x] 작업 카드의 체크박스와 STATUS.md의 in-progress가 일치하는지
 
 ## 의존
 - ← 작업 **32**(커밋 메시지 토큰 규약)와 함께 운영 개선으로 묶어 적용
