@@ -20,6 +20,9 @@ declare -a TARGETS=(
   "$HOME/.config/opencode/AGENTS.md|opencode.md"
 )
 
+# 자동 관리 파일을 식별하는 단일 토큰 (작업 25)
+MARKER='AUTO-GENERATED-DO-NOT-EDIT'
+
 if [[ ! -f "$COMMON" ]]; then
   echo "오류: $COMMON 이 없습니다." >&2
   exit 1
@@ -28,12 +31,30 @@ fi
 for entry in "${TARGETS[@]}"; do
   dest="${entry%%|*}"
   src_name="${entry##*|}"
-  mkdir -p "$(dirname "$dest")"
 
-  tmp="$(mktemp)"
+  # dest 가 심볼릭 링크면 링크 타깃 파일을 기준으로 작업한다 (작업 23).
+  # dangling 심링크(타깃 없음)는 dest 위치에 직접 쓴다.
+  if [[ -L "$dest" ]]; then
+    if real_target="$(readlink -f -- "$dest" 2>/dev/null)" && [[ -n "$real_target" && -e "$real_target" ]]; then
+      echo "note: $dest 는 심볼릭 링크 (→ $real_target). 링크 타깃 파일에 동기화합니다." >&2
+      target_for_write="$real_target"
+    else
+      target_for_write="$dest"
+    fi
+  else
+    target_for_write="$dest"
+  fi
+
+  mkdir -p "$(dirname "$target_for_write")"
+
+  # 목적지와 같은 디렉토리에 tmp 를 만들어 mv 가 같은 파일시스템에서
+  # 원자적으로 동작하도록 한다. 실패 시 tmp 가 남지 않도록 trap 설치 (작업 12).
+  tmp="$(mktemp "$target_for_write.XXXXXX")"
+  trap 'rm -f "$tmp"' EXIT
+
   {
-    echo "<!-- 자동 생성. 원본: ~/ai-tools-config/global-instructions/ -->"
-    echo "<!-- 동기화: install-global-instructions.sh -->"
+    echo "<!-- $MARKER -->"
+    echo "<!-- 원본: ~/ai-tools-config/global-instructions/ (install-global-instructions.sh 로 동기화) -->"
     echo "<!-- 이 파일을 직접 수정해도 다음 실행 시 덮어쓰입니다. -->"
     echo
     cat "$COMMON"
@@ -46,11 +67,22 @@ for entry in "${TARGETS[@]}"; do
       echo
       cat "$SRC/$src_name"
     } >> "$tmp"
-    mv "$tmp" "$dest"
-    echo "synced: $dest (common + $src_name)"
+  fi
+
+  # 자동 생성 마커가 없는 기존 사용자 파일은 백업 후 덮어쓴다 (작업 02).
+  # 토큰이 라인 위치와 무관하게 매칭되도록 grep -qF 사용 (작업 25).
+  if [[ -f "$target_for_write" ]] && ! grep -qF "$MARKER" "$target_for_write"; then
+    backup="$target_for_write.bak.$(date +%Y%m%d%H%M%S)"
+    cp "$target_for_write" "$backup"
+    echo "backed up: $target_for_write -> $backup"
+  fi
+
+  mv "$tmp" "$target_for_write"
+
+  if [[ -f "$SRC/$src_name" ]]; then
+    echo "synced: $target_for_write (common + $src_name)"
   else
-    mv "$tmp" "$dest"
-    echo "synced: $dest (common only)"
+    echo "synced: $target_for_write (common only)"
   fi
 done
 
