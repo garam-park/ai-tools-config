@@ -23,4 +23,8 @@
   - 커밋 메시지에 `Co-Authored-By: Claude`, `Generated with Claude Code` 등 AI 관련 트레일러·서명·푸터를 절대 넣지 않는다. 사용자가 명시적으로 요청한 경우에만 예외.
   - 여러 무관한 변경이 섞이지 않도록 분리해서 커밋한다
   - push는 사용자가 명시적으로 요청할 때만 한다
+- 작업 카드를 참조하는 경우 커밋 메시지에 다음 토큰을 포함한다 (정확한 형식)
+  - 단일 작업: `(task NN)` — 예: `fix(install-skills): guard destructive operations (task 01)`
+  - 묶음 작업: `(tasks NN,MM)` — 예: `refactor(install-skills): harden guards (tasks 01,22)`
+  - `tasks/001.todo/total/`의 카드 번호와 일치시킨다
 - 큰 변경은 작은 단계로 나눠서 진행한다
