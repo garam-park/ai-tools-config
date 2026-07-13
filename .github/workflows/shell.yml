@@ -1,0 +1,20 @@
+name: Shell installers
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Run installer tests
+        run: bash tests/installers_test.sh
+      - name: Run ShellCheck
+        run: shellcheck install-skills.sh install-global-instructions.sh tests/installers_test.sh
