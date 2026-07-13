@@ -8,10 +8,53 @@
 # 멱등성 보장: 여러 번 실행해도 같은 결과.
 
 set -euo pipefail
+shopt -s inherit_errexit 2>/dev/null || true
 
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC="$SRC_DIR/global-instructions"
 COMMON="$SRC/common.md"
+MARKER="AUTO-GENERATED-DO-NOT-EDIT"
+tmp=""
+
+cleanup() {
+  [[ -z "$tmp" ]] || rm -f "$tmp"
+}
+trap cleanup EXIT
+
+resolve_symlink_target() {
+  local path="$1"
+  local link_value
+  local link_dir
+  local depth=0
+
+  while [[ -L "$path" ]]; do
+    depth=$((depth + 1))
+    if [[ "$depth" -gt 40 ]]; then
+      echo "오류: 심볼릭 링크 순환이 의심됩니다: $1" >&2
+      return 1
+    fi
+    link_value="$(readlink "$path")"
+    if [[ "$link_value" == /* ]]; then
+      path="$link_value"
+    else
+      link_dir="$(cd "$(dirname "$path")" && pwd -P)"
+      path="$link_dir/$link_value"
+    fi
+  done
+  printf '%s\n' "$path"
+}
+
+next_backup_path() {
+  local original="$1"
+  local candidate="$original.bak.$(date +%Y%m%d%H%M%S)"
+  local suffix=0
+
+  while [[ -e "$candidate" || -L "$candidate" ]]; do
+    suffix=$((suffix + 1))
+    candidate="$original.bak.$(date +%Y%m%d%H%M%S).$suffix"
+  done
+  printf '%s\n' "$candidate"
+}
 
 # 도구별 매핑: "대상 파일 경로|소스 파일 이름"
 declare -a TARGETS=(
@@ -30,26 +73,41 @@ for entry in "${TARGETS[@]}"; do
   src_name="${entry##*|}"
   mkdir -p "$(dirname "$dest")"
 
-  tmp="$(mktemp)"
+  write_target="$dest"
+  if [[ -L "$dest" ]]; then
+    write_target="$(resolve_symlink_target "$dest")"
+    echo "note: $dest 는 심볼릭 링크입니다. 링크를 보존하고 $write_target 에 동기화합니다." >&2
+  fi
+  mkdir -p "$(dirname "$write_target")"
+
+  if [[ -f "$write_target" ]] && ! grep -qF "$MARKER" "$write_target"; then
+    backup="$(next_backup_path "$write_target")"
+    cp -p "$write_target" "$backup"
+    echo "backed up: $write_target -> $backup"
+  elif [[ -e "$write_target" && ! -f "$write_target" ]]; then
+    echo "오류: 대상이 일반 파일이 아닙니다: $write_target" >&2
+    exit 1
+  fi
+
+  tmp="$(mktemp "$write_target.XXXXXX")"
   {
-    echo "<!-- 자동 생성. 원본: ~/ai-tools-config/global-instructions/ -->"
-    echo "<!-- 동기화: install-global-instructions.sh -->"
-    echo "<!-- 이 파일을 직접 수정해도 다음 실행 시 덮어쓰입니다. -->"
+    echo "<!-- $MARKER -->"
+    echo "<!-- 동기화: install-global-instructions.sh — 직접 수정 시 다음 실행에 덮어써짐 -->"
     echo
     cat "$COMMON"
-  } > "$tmp"
-
-  if [[ -f "$SRC/$src_name" ]]; then
-    {
+    if [[ -f "$SRC/$src_name" ]]; then
       echo
       echo "---"
       echo
       cat "$SRC/$src_name"
-    } >> "$tmp"
-    mv "$tmp" "$dest"
+    fi
+  } > "$tmp"
+
+  mv "$tmp" "$write_target"
+  tmp=""
+  if [[ -f "$SRC/$src_name" ]]; then
     echo "synced: $dest (common + $src_name)"
   else
-    mv "$tmp" "$dest"
     echo "synced: $dest (common only)"
   fi
 done
