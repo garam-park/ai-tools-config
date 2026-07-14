@@ -76,6 +76,18 @@ bash ~/ai-tools-config/install-global-instructions.sh
 
 `rsync`에는 `--delete`를 사용하지 않으므로 `~/.local/share/skills/`의 로컬 전용 스킬이나 설치 스크립트가 삭제되지 않는다. 제거된 리포 스킬의 도구별 심볼릭 링크는 설치 스크립트의 manifest가 관리 링크인지 확인한 뒤 정리한다.
 
+## 설치 상태 점검 (doctor)
+
+두 스크립트 모두 `doctor` 서브커맨드를 지원한다. 아무것도 변경하지 않고 설치 상태만 검사하며, 문제가 있으면 종료 코드 1을 반환한다.
+
+```bash
+bash ~/.local/share/skills/install-skills.sh doctor      # 스킬 링크 상태 점검
+bash ~/ai-tools-config/install-global-instructions.sh doctor  # 글로벌 지침 동기화 상태 점검
+```
+
+- `install-skills.sh doctor`: 각 대상 경로에 링크가 존재하고 원본 스킬을 정확히 가리키는지, 실제 파일·디렉토리와 충돌하는지, 원본에서 사라진 스킬의 stale 링크가 남아 있는지 확인한다.
+- `install-global-instructions.sh doctor`: 각 도구의 글로벌 지침 파일이 존재하고 자동 생성 마커가 있으며, 내용이 현재 원본(common + 도구별 델타)과 일치하는지 확인한다.
+
 ## 스킬 추가하기
 
 1. `skills/<name>/` 폴더를 만들고 그 안에 `SKILL.md`를 작성한다.

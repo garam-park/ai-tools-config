@@ -13,9 +13,25 @@
 #   - 심볼릭 링크 순환 탐지 (최대 40 depth)
 #   - dangling 심링크(타깃 없음)는 dest 위치에 직접 쓴다
 #   - 같은 파일시스템 tmp + mv 로 원자적 교체, 실패 시 tmp 정리(trap)
+#
+# 사용법:
+#   ./install-global-instructions.sh [install]   # 동기화 (기본)
+#   ./install-global-instructions.sh doctor      # 변경 없이 동기화 상태만 검사 (문제 시 exit 1)
 
 set -euo pipefail
 shopt -s inherit_errexit 2>/dev/null || true   # bash 4.4+: command substitution도 errexit 상속
+
+CMD="install"
+case "${1:-}" in
+  "") ;;
+  install|doctor)
+    CMD="$1"
+    ;;
+  *)
+    echo "사용법: $0 [install|doctor]" >&2
+    exit 2
+    ;;
+esac
 
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC="$SRC_DIR/global-instructions"
@@ -64,6 +80,21 @@ next_backup_path() {
   printf '%s\n' "$candidate"
 }
 
+# install과 doctor가 같은 결과물 정의를 공유한다.
+render_expected() {
+  local src_name="$1"
+  echo "<!-- $MARKER -->"
+  echo "<!-- 동기화: install-global-instructions.sh — 직접 수정 시 다음 실행에 덮어써짐 -->"
+  echo
+  cat "$COMMON"
+  if [[ -f "$SRC/$src_name" ]]; then
+    echo
+    echo "---"
+    echo
+    cat "$SRC/$src_name"
+  fi
+}
+
 # 도구별 매핑: "대상 파일 경로|소스 파일 이름"
 declare -a TARGETS=(
   "$HOME/.claude/CLAUDE.md|claude.md"
@@ -73,6 +104,54 @@ declare -a TARGETS=(
 
 if [[ ! -f "$COMMON" ]]; then
   echo "오류: $COMMON 이 없습니다." >&2
+  exit 1
+fi
+
+# doctor: 아무것도 변경하지 않고 동기화 상태만 검사한다.
+if [[ "$CMD" == "doctor" ]]; then
+  problems=0
+  for entry in "${TARGETS[@]}"; do
+    dest="${entry%%|*}"
+    src_name="${entry##*|}"
+
+    write_target="$dest"
+    if [[ -L "$dest" ]]; then
+      if resolved="$(resolve_symlink_target "$dest" 2>/dev/null)" && [[ -n "$resolved" ]]; then
+        write_target="$resolved"
+      else
+        echo "problem: $dest — 심볼릭 링크를 해석할 수 없습니다 (순환 의심)."
+        problems=$((problems + 1))
+        continue
+      fi
+    fi
+
+    if [[ -f "$write_target" ]]; then
+      if ! grep -qF "$MARKER" "$write_target"; then
+        echo "problem: $dest — 자동 생성 마커가 없습니다 (사용자 작성 파일, install 시 백업 후 교체)."
+        problems=$((problems + 1))
+      elif ! cmp -s <(render_expected "$src_name") "$write_target"; then
+        echo "problem: $dest — 내용이 원본과 다릅니다. install을 다시 실행하세요."
+        problems=$((problems + 1))
+      elif [[ -f "$SRC/$src_name" ]]; then
+        echo "ok: $dest (common + $src_name)"
+      else
+        echo "ok: $dest (common only)"
+      fi
+    elif [[ -e "$write_target" ]]; then
+      echo "problem: $dest — 대상이 일반 파일이 아닙니다: $write_target"
+      problems=$((problems + 1))
+    else
+      echo "problem: $dest — 파일이 없습니다. install을 실행하세요."
+      problems=$((problems + 1))
+    fi
+  done
+
+  echo
+  if [[ "$problems" -eq 0 ]]; then
+    echo "doctor: 문제 없음."
+    exit 0
+  fi
+  echo "doctor: ${problems}개 문제 발견. ./install-global-instructions.sh 를 실행해 동기화하세요."
   exit 1
 fi
 
@@ -105,18 +184,7 @@ for entry in "${TARGETS[@]}"; do
   fi
 
   tmp="$(mktemp "$write_target.XXXXXX")"
-  {
-    echo "<!-- $MARKER -->"
-    echo "<!-- 동기화: install-global-instructions.sh — 직접 수정 시 다음 실행에 덮어써짐 -->"
-    echo
-    cat "$COMMON"
-    if [[ -f "$SRC/$src_name" ]]; then
-      echo
-      echo "---"
-      echo
-      cat "$SRC/$src_name"
-    fi
-  } > "$tmp"
+  render_expected "$src_name" > "$tmp"
 
   mv "$tmp" "$write_target"
   tmp=""

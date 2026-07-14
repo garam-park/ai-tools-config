@@ -75,6 +75,18 @@ run_globals() {
   HOME="$home" bash "$fixture/install-global-instructions.sh"
 }
 
+run_skills_doctor() {
+  local fixture="$1"
+  local home="$2"
+  HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/install-skills.sh" doctor
+}
+
+run_globals_doctor() {
+  local fixture="$1"
+  local home="$2"
+  HOME="$home" bash "$fixture/install-global-instructions.sh" doctor
+}
+
 test_first_and_repeated_skill_install() {
   local fixture="$TEST_ROOT/first install/source"
   local home="$TEST_ROOT/first install/home"
@@ -276,6 +288,86 @@ test_global_symlink_targets() {
   pass "정상/끊어진 글로벌 지침 심볼릭 링크 보존"
 }
 
+test_skills_doctor() {
+  local fixture="$TEST_ROOT/doctor-skills/source"
+  local home="$TEST_ROOT/doctor-skills/home"
+  make_skills_fixture "$fixture"
+
+  if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.before" 2>&1; then
+    fail "설치 전 doctor가 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.before" "디렉토리가 없습니다"
+
+  run_skills "$fixture" "$home" >/dev/null
+  run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.ok" 2>&1
+  assert_contains "$TEST_ROOT/doctor-skills.ok" "문제 없음"
+
+  rm "$home/.claude/skills/paced-explainer"
+  if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.missing" 2>&1; then
+    fail "링크 누락이 doctor에서 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.missing" "링크가 없습니다"
+
+  ln -s "$TEST_ROOT/nowhere" "$home/.claude/skills/paced-explainer"
+  if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.wrong" 2>&1; then
+    fail "잘못된 링크 타깃이 doctor에서 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.wrong" "다른 곳을 가리킵니다"
+
+  run_skills "$fixture" "$home" >/dev/null
+  mkdir -p "$fixture/ghost-skill"
+  printf '%s\n' '---' 'name: ghost-skill' 'description: test' '---' > "$fixture/ghost-skill/SKILL.md"
+  run_skills "$fixture" "$home" >/dev/null
+  rm -rf "$fixture/ghost-skill"
+  if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.stale" 2>&1; then
+    fail "stale 링크가 doctor에서 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.stale" "stale 링크"
+
+  if HOME="$home" bash "$fixture/install-skills.sh" bogus >"$TEST_ROOT/doctor-skills.bogus" 2>&1; then
+    fail "알 수 없는 인자가 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.bogus" "알 수 없는 인자"
+  pass "skills doctor: 설치 전/후, 누락·오링크·stale 진단과 인자 검증"
+}
+
+test_globals_doctor() {
+  local fixture="$TEST_ROOT/doctor-globals/source"
+  local home="$TEST_ROOT/doctor-globals/home"
+  make_global_fixture "$fixture"
+
+  if run_globals_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-globals.before" 2>&1; then
+    fail "설치 전 doctor가 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-globals.before" "파일이 없습니다"
+
+  run_globals "$fixture" "$home" >/dev/null
+  run_globals_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-globals.ok" 2>&1
+  assert_contains "$TEST_ROOT/doctor-globals.ok" "문제 없음"
+
+  printf '추가 줄\n' >> "$home/.claude/CLAUDE.md"
+  if run_globals_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-globals.drift" 2>&1; then
+    fail "내용 드리프트가 doctor에서 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-globals.drift" "내용이 원본과 다릅니다"
+
+  printf '내 지침\n' > "$home/.claude/CLAUDE.md"
+  if run_globals_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-globals.user" 2>&1; then
+    fail "마커 없는 사용자 파일이 doctor에서 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-globals.user" "자동 생성 마커가 없습니다"
+
+  run_globals "$fixture" "$home" >/dev/null
+  run_globals_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-globals.fixed" 2>&1
+  assert_contains "$TEST_ROOT/doctor-globals.fixed" "문제 없음"
+
+  if HOME="$home" bash "$fixture/install-global-instructions.sh" bogus >"$TEST_ROOT/doctor-globals.bogus" 2>&1; then
+    fail "알 수 없는 인자가 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-globals.bogus" "사용법"
+  pass "globals doctor: 설치 전/후, 드리프트·사용자 파일 진단과 인자 검증"
+}
+
 test_first_and_repeated_skill_install
 test_collision_protection_and_partial_progress
 test_wrong_symlink_replacement
@@ -287,5 +379,7 @@ test_target_mkdir_error
 test_global_first_repeat_and_backup
 test_marker_position_independent
 test_global_symlink_targets
+test_skills_doctor
+test_globals_doctor
 
 echo "1..$PASSED"
