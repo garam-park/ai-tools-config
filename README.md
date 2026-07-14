@@ -14,6 +14,10 @@ ai-tools-config/
 │   ├── codex.md                               # Codex 전용 델타
 │   └── opencode.md                            # OpenCode 전용 델타
 ├── skills/
+│   ├── analyze-task/
+│   │   ├── SKILL.md
+│   │   └── agents/
+│   │       └── openai.yaml
 │   ├── create-pr/
 │   │   ├── SKILL.md
 │   │   └── agents/
