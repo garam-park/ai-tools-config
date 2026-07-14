@@ -176,6 +176,6 @@ echo "  - GitHub Copilot: ~/.agents/skills"
 echo "  - OpenCode: ~/.agents/skills"
 
 if [[ "$failures" -gt 0 ]]; then
-  error "$failures개 항목을 설치하지 못했습니다. 위 경고를 확인하세요."
+  error "${failures}개 항목을 설치하지 못했습니다. 위 경고를 확인하세요."
   exit 1
 fi
