@@ -203,9 +203,10 @@ test_global_first_repeat_and_backup() {
   assert_contains "$home/.claude/CLAUDE.md" "AUTO-GENERATED-DO-NOT-EDIT"
   assert_contains "$home/.codex/AGENTS.md" "Codex 전용 지침"
   assert_contains "$home/.config/opencode/AGENTS.md" "OpenCode 전용 지침"
-  assert_contains "$home/.claude/CLAUDE.md" "작업 카드를 참조하는 경우"
-  assert_contains "$home/.codex/AGENTS.md" "(tasks NN,MM)"
-  assert_contains "$home/.config/opencode/AGENTS.md" "(task NN)"
+  assert_contains "$home/.claude/CLAUDE.md" "한국어로 대화해요."
+  assert_contains "$home/.claude/CLAUDE.md" '사용자가 `/paced-explainer`를 입력하면'
+  assert_contains "$home/.codex/AGENTS.md" '사용자가 `$스킬명` 형식으로 스킬을 지정하면'
+  assert_contains "$home/.config/opencode/AGENTS.md" '`sisyphus` 에이전트를 기본값으로 사용해요.'
   assert_no_glob "$home/.claude/CLAUDE.md.bak.*"
 
   printf '내 지침\n' > "$home/.codex/AGENTS.md"

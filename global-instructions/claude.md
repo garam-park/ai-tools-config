@@ -1,8 +1,5 @@
 # Claude Code 전용 지침
 
-> Claude Code에서만 추가로 적용되는 사항.
-> `~/.claude/CLAUDE.md`로 동기화된다.
+## 스킬
 
-## 트리거
-
-- `/paced-explainer` 입력 시 Skill 도구로 `paced-explainer` 호출
+- 사용자가 `/paced-explainer`를 입력하면 `paced-explainer` 스킬을 사용해요.
