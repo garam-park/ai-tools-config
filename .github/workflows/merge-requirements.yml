@@ -23,15 +23,17 @@ jobs:
       - name: Run installer tests
         run: bash tests/installers_test.sh
 
-  # M-1.3: 커밋 메시지에 (task NN) / (tasks NN,MM) 토큰 검증
+  # M-1.3: 커밋 메시지 (task NN) / (tasks NN,MM) 토큰 (경고성 — 운영자 판단)
+  # 토큰 규약은 작업 카드 관련 커밋에만 적용되므로(tasks/STATUS.md) 전 커밋 차단은 하지 않는다.
   commit-convention:
-    name: Commit message convention
+    name: Commit message convention (advisory)
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Verify (task NN) / (tasks NN,MM) tokens in commit messages
+      - name: Warn on commits without (task NN) / (tasks NN,MM) tokens
         run: |
           set -euo pipefail
           BASE="${{ github.event.pull_request.base.sha }}"
@@ -43,9 +45,11 @@ jobs:
           # 허용 형식: (task 01) / (task 1, 2) / (tasks 01,22) / (tasks 01-32)
           missing="$(git log "$BASE..$HEAD" --pretty='%s' | grep -vE '\(tasks? [0-9, \-]+\)' || true)"
           if [ -n "$missing" ]; then
-            echo "::error::다음 커밋 메시지에 (task NN) / (tasks NN,MM) 토큰이 없습니다:"
-            echo "$missing"
-            exit 1
+            echo "::warning::작업 토큰이 없는 커밋이 있습니다. 작업 카드 관련 커밋이라면 (task NN) / (tasks NN,MM) 토큰을 붙이세요:"
+            while IFS= read -r line; do
+              echo "::warning::$line"
+            done <<< "$missing"
+            exit 0
           fi
           echo "OK: 모든 커밋이 작업 토큰 규약을 만족합니다."
 
