@@ -51,9 +51,9 @@ assert_no_glob() {
 
 make_skills_fixture() {
   local fixture="$1"
-  mkdir -p "$fixture/paced-explainer"
+  mkdir -p "$fixture/skills/paced-explainer"
   cp "$REPO_ROOT/install-skills.sh" "$fixture/install-skills.sh"
-  printf '%s\n' '---' 'name: paced-explainer' 'description: test' '---' > "$fixture/paced-explainer/SKILL.md"
+  printf '%s\n' '---' 'name: paced-explainer' 'description: test' '---' > "$fixture/skills/paced-explainer/SKILL.md"
 }
 
 make_global_fixture() {
@@ -73,6 +73,18 @@ run_globals() {
   local fixture="$1"
   local home="$2"
   HOME="$home" bash "$fixture/install-global-instructions.sh"
+}
+
+run_skills_doctor() {
+  local fixture="$1"
+  local home="$2"
+  HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/install-skills.sh" doctor
+}
+
+run_globals_doctor() {
+  local fixture="$1"
+  local home="$2"
+  HOME="$home" bash "$fixture/install-global-instructions.sh" doctor
 }
 
 test_first_and_repeated_skill_install() {
@@ -128,11 +140,11 @@ test_stale_manifest_cleanup() {
   local home="$TEST_ROOT/stale/home"
   local target
   make_skills_fixture "$fixture"
-  mkdir -p "$fixture/old-skill"
-  printf '%s\n' '---' 'name: old-skill' 'description: test' '---' > "$fixture/old-skill/SKILL.md"
+  mkdir -p "$fixture/skills/old-skill"
+  printf '%s\n' '---' 'name: old-skill' 'description: test' '---' > "$fixture/skills/old-skill/SKILL.md"
   run_skills "$fixture" "$home" >/dev/null
 
-  rm -rf "$fixture/old-skill"
+  rm -rf "$fixture/skills/old-skill"
   run_skills "$fixture" "$home" >/dev/null
   for target in .claude .agents; do
     assert_not_exists "$home/$target/skills/old-skill"
@@ -153,8 +165,8 @@ test_legacy_target_cleanup() {
 
   for old_target in "$home/.copilot/skills" "$home/.codex/skills" "$home/.config/opencode/skills"; do
     mkdir -p "$old_target"
-    ln -s "$fixture/paced-explainer" "$old_target/paced-explainer"
-    printf '%s\t%s\t%s\n' "$old_target" paced-explainer "$fixture/paced-explainer" >> "$home/.state/ai-tools-config/install-skills.manifest"
+    ln -s "$fixture/skills/paced-explainer" "$old_target/paced-explainer"
+    printf '%s\t%s\t%s\n' "$old_target" paced-explainer "$fixture/skills/paced-explainer" >> "$home/.state/ai-tools-config/install-skills.manifest"
   done
 
   run_skills "$fixture" "$home" >/dev/null
@@ -170,14 +182,14 @@ test_stale_user_item_preserved() {
   local fixture="$TEST_ROOT/stale-user/source"
   local home="$TEST_ROOT/stale-user/home"
   make_skills_fixture "$fixture"
-  mkdir -p "$fixture/old-skill"
-  printf '%s\n' '---' 'name: old-skill' 'description: test' '---' > "$fixture/old-skill/SKILL.md"
+  mkdir -p "$fixture/skills/old-skill"
+  printf '%s\n' '---' 'name: old-skill' 'description: test' '---' > "$fixture/skills/old-skill/SKILL.md"
   run_skills "$fixture" "$home" >/dev/null
 
   rm -f "$home/.claude/skills/old-skill"
   mkdir -p "$home/.claude/skills/old-skill"
   printf 'mine\n' > "$home/.claude/skills/old-skill/LOCAL_ONLY"
-  rm -rf "$fixture/old-skill"
+  rm -rf "$fixture/skills/old-skill"
   run_skills "$fixture" "$home" >"$TEST_ROOT/stale-user.out" 2>&1
   assert_file "$home/.claude/skills/old-skill/LOCAL_ONLY"
   assert_contains "$TEST_ROOT/stale-user.out" "사용자 항목으로 바뀌어"
@@ -185,12 +197,18 @@ test_stale_user_item_preserved() {
 }
 
 test_empty_skill_source_errors() {
+  local nodir="$TEST_ROOT/nodir/source"
   local empty="$TEST_ROOT/empty/source"
   local nonskill="$TEST_ROOT/nonskill/source"
-  mkdir -p "$empty" "$nonskill/random-dir"
+  mkdir -p "$nodir" "$empty/skills" "$nonskill/skills/random-dir"
+  cp "$REPO_ROOT/install-skills.sh" "$nodir/install-skills.sh"
   cp "$REPO_ROOT/install-skills.sh" "$empty/install-skills.sh"
   cp "$REPO_ROOT/install-skills.sh" "$nonskill/install-skills.sh"
 
+  if HOME="$TEST_ROOT/nodir/home" bash "$nodir/install-skills.sh" >"$TEST_ROOT/nodir.out" 2>&1; then
+    fail "skills/ 없는 원본이 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/nodir.out" "원본 폴더를 찾을 수 없습니다"
   if HOME="$TEST_ROOT/empty/home" bash "$empty/install-skills.sh" >"$TEST_ROOT/empty.out" 2>&1; then
     fail "빈 원본이 성공으로 보고되었습니다"
   fi
@@ -199,7 +217,7 @@ test_empty_skill_source_errors() {
     fail "SKILL.md 없는 원본이 성공으로 보고되었습니다"
   fi
   assert_contains "$TEST_ROOT/nonskill.out" "SKILL.md가 있는 스킬이 없습니다"
-  pass "빈 원본과 비스킬 원본의 명시적 오류"
+  pass "skills/ 부재, 빈 원본, 비스킬 원본의 명시적 오류"
 }
 
 test_target_mkdir_error() {
@@ -276,6 +294,116 @@ test_global_symlink_targets() {
   pass "정상/끊어진 글로벌 지침 심볼릭 링크 보존"
 }
 
+test_skills_doctor() {
+  local fixture="$TEST_ROOT/doctor-skills/source"
+  local home="$TEST_ROOT/doctor-skills/home"
+  make_skills_fixture "$fixture"
+
+  if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.before" 2>&1; then
+    fail "설치 전 doctor가 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.before" "디렉토리가 없습니다"
+
+  run_skills "$fixture" "$home" >/dev/null
+  run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.ok" 2>&1
+  assert_contains "$TEST_ROOT/doctor-skills.ok" "문제 없음"
+
+  rm "$home/.claude/skills/paced-explainer"
+  if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.missing" 2>&1; then
+    fail "링크 누락이 doctor에서 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.missing" "링크가 없습니다"
+
+  ln -s "$TEST_ROOT/nowhere" "$home/.claude/skills/paced-explainer"
+  if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.wrong" 2>&1; then
+    fail "잘못된 링크 타깃이 doctor에서 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.wrong" "다른 곳을 가리킵니다"
+
+  run_skills "$fixture" "$home" >/dev/null
+  mkdir -p "$fixture/skills/ghost-skill"
+  printf '%s\n' '---' 'name: ghost-skill' 'description: test' '---' > "$fixture/skills/ghost-skill/SKILL.md"
+  run_skills "$fixture" "$home" >/dev/null
+  rm -rf "$fixture/skills/ghost-skill"
+  if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.stale" 2>&1; then
+    fail "stale 링크가 doctor에서 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.stale" "stale 링크"
+
+  run_skills "$fixture" "$home" >/dev/null
+  ln -s "$TEST_ROOT/doctor-skills/nowhere-gone" "$home/.claude/skills/orphan"
+  if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.dangling" 2>&1; then
+    fail "dangling 링크가 doctor에서 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.dangling" "dangling 링크"
+  rm "$home/.claude/skills/orphan"
+
+  rm "$home/.claude/skills/paced-explainer"
+  mkdir -p "$home/.claude/skills/paced-explainer"
+  if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.collision" 2>&1; then
+    fail "실제 디렉토리 충돌이 doctor에서 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.collision" "실제 파일/디렉토리"
+
+  if HOME="$home" bash "$fixture/install-skills.sh" bogus >"$TEST_ROOT/doctor-skills.bogus" 2>&1; then
+    fail "알 수 없는 인자가 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.bogus" "알 수 없는 인자"
+  pass "skills doctor: 설치 전/후, 누락·오링크·stale 진단과 인자 검증"
+}
+
+test_globals_doctor() {
+  local fixture="$TEST_ROOT/doctor-globals/source"
+  local home="$TEST_ROOT/doctor-globals/home"
+  make_global_fixture "$fixture"
+
+  if run_globals_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-globals.before" 2>&1; then
+    fail "설치 전 doctor가 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-globals.before" "파일이 없습니다"
+
+  run_globals "$fixture" "$home" >/dev/null
+  run_globals_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-globals.ok" 2>&1
+  assert_contains "$TEST_ROOT/doctor-globals.ok" "문제 없음"
+
+  printf '추가 줄\n' >> "$home/.claude/CLAUDE.md"
+  if run_globals_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-globals.drift" 2>&1; then
+    fail "내용 드리프트가 doctor에서 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-globals.drift" "내용이 원본과 다릅니다"
+
+  printf '내 지침\n' > "$home/.claude/CLAUDE.md"
+  if run_globals_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-globals.user" 2>&1; then
+    fail "마커 없는 사용자 파일이 doctor에서 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-globals.user" "자동 생성 마커가 없습니다"
+
+  run_globals "$fixture" "$home" >/dev/null
+  run_globals_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-globals.fixed" 2>&1
+  assert_contains "$TEST_ROOT/doctor-globals.fixed" "문제 없음"
+
+  local ext="$TEST_ROOT/doctor-globals/ext/claude.md"
+  mkdir -p "$(dirname "$ext")"
+  printf '외부 원본\n' > "$ext"
+  rm "$home/.claude/CLAUDE.md"
+  ln -s "$ext" "$home/.claude/CLAUDE.md"
+  run_globals "$fixture" "$home" >/dev/null 2>&1
+  run_globals_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-globals.symlink" 2>&1
+  assert_contains "$TEST_ROOT/doctor-globals.symlink" "문제 없음"
+  assert_symlink "$home/.claude/CLAUDE.md"
+
+  if HOME="$home" bash "$fixture/install-global-instructions.sh" bogus >"$TEST_ROOT/doctor-globals.bogus" 2>&1; then
+    fail "알 수 없는 인자가 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-globals.bogus" "사용법"
+
+  if HOME="$home" bash "$fixture/install-global-instructions.sh" doctor bogus-extra >"$TEST_ROOT/doctor-globals.extra" 2>&1; then
+    fail "서브커맨드 뒤 초과 인자가 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-globals.extra" "알 수 없는 인자"
+  pass "globals doctor: 설치 전/후, 드리프트·사용자 파일 진단과 인자 검증"
+}
+
 test_first_and_repeated_skill_install
 test_collision_protection_and_partial_progress
 test_wrong_symlink_replacement
@@ -287,5 +415,7 @@ test_target_mkdir_error
 test_global_first_repeat_and_backup
 test_marker_position_independent
 test_global_symlink_targets
+test_skills_doctor
+test_globals_doctor
 
 echo "1..$PASSED"
