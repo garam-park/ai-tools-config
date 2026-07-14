@@ -26,12 +26,12 @@
 원본 위치: `~/.claude/skills/`
 
 - `graphify`
-- `multi-agent-decide`
 - `obsidian-docs`
 
 ## 검토 완료
 
 - `ask-step-by-step` — **폐기**. 한 번에 질문 하나만 다루는 핵심 규칙이 `paced-explainer`와 중복되고, 모든 질문을 여러 턴으로 나누는 자동 트리거 및 Claude 전용 `AskUserQuestion` 표현이 공통 스킬에 적합하지 않다. 로컬 원본은 보존한다.
+- `multi-agent-decide` — **폐기**. 일반적인 결정에도 다수 에이전트의 2회 토론을 자동 실행해 비용과 지연이 크고, Claude 전용 도구 및 폐기된 `ask-step-by-step`에 의존한다. 필요한 멀티에이전트 절차는 목적별 스킬에서 선택적으로 다룬다. 로컬 원본은 보존한다.
 
 ## 제외한 항목
 
