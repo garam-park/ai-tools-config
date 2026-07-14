@@ -1,0 +1,110 @@
+name: Merge Requirements
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  # M-1.1 + M-1.2: 셸 정적 검사 + 설치 테스트
+  shell-and-tests:
+    name: ShellCheck + Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          severity: warning
+          additional_files: install-skills.sh install-global-instructions.sh tests/installers_test.sh
+
+      - name: Run installer tests
+        run: bash tests/installers_test.sh
+
+  # M-1.3: 커밋 메시지에 (task NN) / (tasks NN,MM) 토큰 검증
+  commit-convention:
+    name: Commit message convention
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify (task NN) / (tasks NN,MM) tokens in commit messages
+        run: |
+          set -euo pipefail
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          if [ -z "$BASE" ] || [ -z "$HEAD" ]; then
+            echo "PR base/head SHA missing — skipping"
+            exit 0
+          fi
+          # 허용 형식: (task 01) / (task 1, 2) / (tasks 01,22) / (tasks 01-32)
+          missing="$(git log "$BASE..$HEAD" --pretty='%s' | grep -vE '\(tasks? [0-9, \-]+\)' || true)"
+          if [ -n "$missing" ]; then
+            echo "::error::다음 커밋 메시지에 (task NN) / (tasks NN,MM) 토큰이 없습니다:"
+            echo "$missing"
+            exit 1
+          fi
+          echo "OK: 모든 커밋이 작업 토큰 규약을 만족합니다."
+
+  # M-1.5: AI 트레일러 부재
+  no-ai-trailers:
+    name: No AI trailers in commit messages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reject Co-Authored-By / Generated with
+        run: |
+          set -euo pipefail
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          bad="$(git log "$BASE..$HEAD" --pretty='%B' | grep -iE 'co-authored-by: (claude|copilot|cursor|cody|gpt)|generated with (claude code|copilot|cursor|cody)|ai-generated' || true)"
+          if [ -n "$bad" ]; then
+            echo "::error::커밋에 AI 트레일러/푸터가 포함되어 있습니다:"
+            echo "$bad"
+            exit 1
+          fi
+          echo "OK: AI 트레일러가 없습니다."
+
+  # M-1.6: agents 디렉토리 무결성 (codex.yaml 존재, openai.yaml 부재)
+  agents-integrity:
+    name: agents/ integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check codex.yaml exists, openai.yaml removed
+        run: |
+          set -euo pipefail
+          if [ ! -f skills/paced-explainer/agents/codex.yaml ]; then
+            echo "::error::skills/paced-explainer/agents/codex.yaml 이 없습니다."
+            exit 1
+          fi
+          if [ -e skills/paced-explainer/agents/openai.yaml ]; then
+            echo "::error::skills/paced-explainer/agents/openai.yaml 이 아직 존재합니다. 제거하세요."
+            exit 1
+          fi
+          echo "OK: agents/ 무결성 검사 통과."
+
+  # M-1.4: 작업 카드 위치 (경고성 — 운영자 판단)
+  tasks-policy:
+    name: tasks/ policy (advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check no unfinished task cards in 001.todo/
+        run: |
+          set +e
+          if [ -d tasks/001.todo/total ]; then
+            count=$(find tasks/001.todo/total -name '*.md' -not -name 'README.md' | wc -l | tr -d ' ')
+            if [ "$count" -gt 0 ]; then
+              echo "::warning::tasks/001.todo/total/ 에 미완료 카드가 ${count}건 있습니다."
+              echo "::warning::머지 전 002.done/total/ 로 이동하거나 PR 본문에 사유를 명시하세요."
+            fi
+          else
+            echo "OK: 001.todo/total/ 디렉토리가 없습니다 (모두 완료됨)."
+          fi
