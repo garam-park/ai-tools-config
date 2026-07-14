@@ -2,7 +2,7 @@
 # install-skills.sh
 #
 # 원본: 이 스크립트가 있는 폴더의 skills/<name>/
-# 각 도구의 개인용 스킬 경로에 심볼릭 링크를 만들어 동기화한다.
+# 공통 Agent Skills 경로와 Claude Code 경로에 심볼릭 링크를 만들어 동기화한다.
 # 멱등성 보장: 여러 번 실행해도 같은 결과.
 #
 # 사용자가 손으로 만든 실제 파일/디렉토리는 삭제하지 않는다.
@@ -25,13 +25,11 @@ SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/ai-tools-config"
 MANIFEST="$STATE_DIR/install-skills.manifest"
 
-# 도구별 개인 스킬 경로 (4도구 → 4경로)
-# Copilot CLI는 ~/.claude/skills도 읽지만, VS Code Copilot 표준 경로는 ~/.copilot/skills다.
+# Claude Code는 전용 개인 경로를 사용한다.
+# Codex, GitHub Copilot, OpenCode는 공통 Agent Skills 경로를 공식 지원한다.
 TARGETS=(
-  "$HOME/.claude/skills"             # Claude Code
-  "$HOME/.copilot/skills"            # GitHub Copilot (VS Code)
-  "$HOME/.codex/skills"              # Codex
-  "$HOME/.config/opencode/skills"    # OpenCode
+  "$HOME/.claude/skills"    # Claude Code
+  "$HOME/.agents/skills"    # Codex, GitHub Copilot, OpenCode
 )
 
 warn() {
@@ -173,9 +171,9 @@ manifest_tmp=""
 echo
 echo "완료. 다음 도구에서 사용 가능:"
 echo "  - Claude Code: ~/.claude/skills"
-echo "  - GitHub Copilot: ~/.copilot/skills"
-echo "  - Codex: ~/.codex/skills"
-echo "  - OpenCode: ~/.config/opencode/skills"
+echo "  - Codex: ~/.agents/skills"
+echo "  - GitHub Copilot: ~/.agents/skills"
+echo "  - OpenCode: ~/.agents/skills"
 
 if [[ "$failures" -gt 0 ]]; then
   error "$failures개 항목을 설치하지 못했습니다. 위 경고를 확인하세요."

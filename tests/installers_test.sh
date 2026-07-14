@@ -84,7 +84,7 @@ test_first_and_repeated_skill_install() {
 
   run_skills "$fixture" "$home" >/dev/null
   run_skills "$fixture" "$home" >/dev/null
-  for target in .claude .copilot .codex .config/opencode; do
+  for target in .claude .agents; do
     assert_symlink "$home/$target/skills/paced-explainer"
     link_source="$(readlink "$home/$target/skills/paced-explainer")"
     [[ -f "$link_source/SKILL.md" && "$link_source" != */ ]] || fail "링크 타깃이 다릅니다: $target"
@@ -104,8 +104,7 @@ test_collision_protection_and_partial_progress() {
     fail "실제 디렉토리 충돌이 성공으로 보고되었습니다"
   fi
   assert_file "$home/.claude/skills/paced-explainer/LOCAL_ONLY"
-  assert_symlink "$home/.copilot/skills/paced-explainer"
-  assert_symlink "$home/.codex/skills/paced-explainer"
+  assert_symlink "$home/.agents/skills/paced-explainer"
   assert_contains "$TEST_ROOT/collision.out" "덮어쓰지 않습니다"
   pass "사용자 디렉토리 보호와 부분 실패 후 계속 진행"
 }
@@ -135,7 +134,7 @@ test_stale_manifest_cleanup() {
 
   rm -rf "$fixture/old-skill"
   run_skills "$fixture" "$home" >/dev/null
-  for target in .claude .copilot .codex .config/opencode; do
+  for target in .claude .agents; do
     assert_not_exists "$home/$target/skills/old-skill"
   done
 
@@ -143,6 +142,28 @@ test_stale_manifest_cleanup() {
   run_skills "$fixture" "$home" >/dev/null
   assert_contains "$home/.state/ai-tools-config/install-skills.manifest" "paced-explainer"
   pass "stale 관리 링크 정리와 손상 manifest 자가 복구"
+}
+
+test_legacy_target_cleanup() {
+  local fixture="$TEST_ROOT/legacy-targets/source"
+  local home="$TEST_ROOT/legacy-targets/home"
+  local old_target
+  make_skills_fixture "$fixture"
+  mkdir -p "$home/.state/ai-tools-config"
+
+  for old_target in "$home/.copilot/skills" "$home/.codex/skills" "$home/.config/opencode/skills"; do
+    mkdir -p "$old_target"
+    ln -s "$fixture/paced-explainer" "$old_target/paced-explainer"
+    printf '%s\t%s\t%s\n' "$old_target" paced-explainer "$fixture/paced-explainer" >> "$home/.state/ai-tools-config/install-skills.manifest"
+  done
+
+  run_skills "$fixture" "$home" >/dev/null
+  assert_not_exists "$home/.copilot/skills/paced-explainer"
+  assert_not_exists "$home/.codex/skills/paced-explainer"
+  assert_not_exists "$home/.config/opencode/skills/paced-explainer"
+  assert_symlink "$home/.claude/skills/paced-explainer"
+  assert_symlink "$home/.agents/skills/paced-explainer"
+  pass "이전 도구별 관리 링크를 공통 경로로 이전"
 }
 
 test_stale_user_item_preserved() {
@@ -259,6 +280,7 @@ test_first_and_repeated_skill_install
 test_collision_protection_and_partial_progress
 test_wrong_symlink_replacement
 test_stale_manifest_cleanup
+test_legacy_target_cleanup
 test_stale_user_item_preserved
 test_empty_skill_source_errors
 test_target_mkdir_error

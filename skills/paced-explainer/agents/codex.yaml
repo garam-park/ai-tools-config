@@ -1,6 +1,0 @@
-# Codex 전용 호출 메타데이터
-# $paced-explainer 는 Codex의 슬래시-달러 명령 문법이다 (ChatGPT/Custom GPT는 미지원).
-interface:
-  display_name: "천천히 설명"
-  short_description: "읽기 쉬운 단계로 짧게 설명"
-  default_prompt: "$paced-explainer를 사용해서 내가 따라갈 수 있게 작은 단계로 설명해줘."

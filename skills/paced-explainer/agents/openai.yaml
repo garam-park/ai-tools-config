@@ -1,0 +1,4 @@
+interface:
+  display_name: "천천히 설명"
+  short_description: "읽기 쉬운 단계로 짧게 설명합니다"
+  default_prompt: "$paced-explainer를 사용해서 내가 따라갈 수 있게 작은 단계로 설명해줘."
