@@ -330,6 +330,14 @@ test_skills_doctor() {
   fi
   assert_contains "$TEST_ROOT/doctor-skills.stale" "stale 링크"
 
+  run_skills "$fixture" "$home" >/dev/null
+  ln -s "$TEST_ROOT/doctor-skills/nowhere-gone" "$home/.claude/skills/orphan"
+  if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.dangling" 2>&1; then
+    fail "dangling 링크가 doctor에서 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.dangling" "dangling 링크"
+  rm "$home/.claude/skills/orphan"
+
   if HOME="$home" bash "$fixture/install-skills.sh" bogus >"$TEST_ROOT/doctor-skills.bogus" 2>&1; then
     fail "알 수 없는 인자가 성공으로 보고되었습니다"
   fi

@@ -137,11 +137,10 @@ if [[ "$CMD" == "doctor" ]]; then
       fi
     done
 
-    # 원본에서 사라진 스킬을 여전히 가리키는 stale 링크 탐지
+    # 원본에서 사라진 스킬의 stale 링크와 타깃이 없는 dangling 링크 탐지
     for link in "$target"/*; do
       [[ -L "$link" ]] || continue
       actual="$(readlink "$link")"
-      [[ "$actual" == "$SRC_DIR"/* ]] || continue
       name="$(basename "$link")"
       is_current=0
       for skill_dir in "${skill_dirs[@]}"; do
@@ -150,8 +149,11 @@ if [[ "$CMD" == "doctor" ]]; then
           break
         fi
       done
-      if [[ "$is_current" -eq 0 ]]; then
+      [[ "$is_current" -eq 0 ]] || continue
+      if [[ "$actual" == "$SRC_DIR"/* ]]; then
         report_problem "$name: 원본에 없는 스킬을 가리키는 stale 링크입니다 ($actual)"
+      elif [[ ! -e "$link" ]]; then
+        report_problem "$name: 타깃이 없는 dangling 링크입니다 ($actual)"
       fi
     done
     echo
