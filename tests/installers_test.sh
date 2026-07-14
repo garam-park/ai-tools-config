@@ -63,6 +63,13 @@ make_global_fixture() {
   cp -R "$REPO_ROOT/global-instructions" "$fixture/global-instructions"
 }
 
+make_bootstrap_fixture() {
+  local fixture="$1"
+  make_skills_fixture "$fixture"
+  make_global_fixture "$fixture"
+  cp "$REPO_ROOT/bootstrap.sh" "$fixture/bootstrap.sh"
+}
+
 run_skills() {
   local fixture="$1"
   local home="$2"
@@ -404,6 +411,25 @@ test_globals_doctor() {
   pass "globals doctor: 설치 전/후, 드리프트·사용자 파일 진단과 인자 검증"
 }
 
+test_bootstrap_smoke() {
+  local fixture="$TEST_ROOT/bootstrap/source"
+  local home="$TEST_ROOT/bootstrap/home"
+  make_bootstrap_fixture "$fixture"
+
+  HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/bootstrap.sh" >"$TEST_ROOT/bootstrap.out" 2>&1
+  assert_symlink "$home/.claude/skills/paced-explainer"
+  assert_symlink "$home/.agents/skills/paced-explainer"
+  assert_contains "$home/.claude/CLAUDE.md" "AUTO-GENERATED-DO-NOT-EDIT"
+  assert_contains "$home/.codex/AGENTS.md" "AUTO-GENERATED-DO-NOT-EDIT"
+  assert_contains "$TEST_ROOT/bootstrap.out" "bootstrap 완료"
+
+  if HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/bootstrap.sh" bogus >"$TEST_ROOT/bootstrap.bogus" 2>&1; then
+    fail "bootstrap의 알 수 없는 인자가 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/bootstrap.bogus" "알 수 없는 인자"
+  pass "bootstrap: 설치 2종 + doctor 2종 일괄 실행과 인자 검증"
+}
+
 test_first_and_repeated_skill_install
 test_collision_protection_and_partial_progress
 test_wrong_symlink_replacement
@@ -417,5 +443,6 @@ test_marker_position_independent
 test_global_symlink_targets
 test_skills_doctor
 test_globals_doctor
+test_bootstrap_smoke
 
 echo "1..$PASSED"
