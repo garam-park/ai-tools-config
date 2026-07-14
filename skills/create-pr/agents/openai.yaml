@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR 생성"
+  short_description: "이노팸 작업 브랜치를 검증하고 초기 PR을 생성합니다"
+  default_prompt: "$create-pr를 사용해 현재 작업 브랜치를 검증하고 리뷰 가능한 PR을 열어줘."
