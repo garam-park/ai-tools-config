@@ -1,0 +1,4 @@
+interface:
+  display_name: "작업 시작"
+  short_description: "TSK 작업을 브랜치 또는 워크트리에서 시작"
+  default_prompt: "Use $start-task to start TSK-3477 in the appropriate repository."

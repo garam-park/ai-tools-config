@@ -32,10 +32,16 @@ ai-tools-config/
 │       │   └── openai.yaml
 │       └── references/
 │           └── depth-patterns.md
-│   └── spec-task/
+│   ├── spec-task/
+│   │   ├── SKILL.md
+│   │   └── agents/
+│   │       └── openai.yaml
+│   └── start-task/
 │       ├── SKILL.md
-│       └── agents/
-│           └── openai.yaml
+│       ├── agents/
+│       │   └── openai.yaml
+│       └── scripts/
+│           └── notion_task.py
 ├── skill-candidates/                         # 미배포 스킬 검토 원본
 ├── tests/
 │   └── installers_test.sh

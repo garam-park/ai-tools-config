@@ -3,7 +3,6 @@ import argparse
 import json
 import os
 import re
-import sys
 import urllib.error
 import urllib.request
 
@@ -30,9 +29,11 @@ def load_token(config_path):
     token = os.environ.get("NOTION_TOKEN")
     if token:
         return token
+    if not config_path:
+        fail("Set NOTION_TOKEN or pass --config with a file containing NOTION_TOKEN")
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
-            text = f.read()
+        with open(config_path, "r", encoding="utf-8") as config_file:
+            text = config_file.read()
     except FileNotFoundError:
         fail(f"Config file not found: {config_path}")
     match = re.search(r'^\s*NOTION_TOKEN\s*=\s*"([^"]+)"', text, re.MULTILINE)
@@ -45,7 +46,7 @@ def notion_request(method, path, token, body=None):
     data = None
     if body is not None:
         data = json.dumps(body, ensure_ascii=False).encode("utf-8")
-    req = urllib.request.Request(
+    request = urllib.request.Request(
         f"https://api.notion.com/v1{path}",
         data=data,
         method=method,
@@ -56,13 +57,13 @@ def notion_request(method, path, token, body=None):
         },
     )
     try:
-        with urllib.request.urlopen(req, timeout=30) as res:
-            return json.loads(res.read().decode("utf-8"))
-    except urllib.error.HTTPError as e:
-        detail = e.read().decode("utf-8", errors="replace")
-        fail(f"Notion API error {e.code}: {detail}")
-    except urllib.error.URLError as e:
-        fail(f"Network error: {e.reason}")
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as error:
+        detail = error.read().decode("utf-8", errors="replace")
+        fail(f"Notion API error {error.code}: {detail}")
+    except urllib.error.URLError as error:
+        fail(f"Network error: {error.reason}")
 
 
 def plain_rich_text(items):
@@ -72,30 +73,30 @@ def plain_rich_text(items):
 def prop_text(prop):
     if not prop:
         return ""
-    typ = prop.get("type")
-    if typ == "title":
+    prop_type = prop.get("type")
+    if prop_type == "title":
         return plain_rich_text(prop.get("title"))
-    if typ == "rich_text":
+    if prop_type == "rich_text":
         return plain_rich_text(prop.get("rich_text"))
-    if typ == "status":
+    if prop_type == "status":
         value = prop.get("status")
         return value.get("name", "") if value else ""
-    if typ == "select":
+    if prop_type == "select":
         value = prop.get("select")
         return value.get("name", "") if value else ""
-    if typ == "multi_select":
-        return [v.get("name", "") for v in prop.get("multi_select", [])]
-    if typ == "people":
-        return [v.get("name") or v.get("id", "") for v in prop.get("people", [])]
-    if typ == "date":
+    if prop_type == "multi_select":
+        return [value.get("name", "") for value in prop.get("multi_select", [])]
+    if prop_type == "people":
+        return [value.get("name") or value.get("id", "") for value in prop.get("people", [])]
+    if prop_type == "date":
         value = prop.get("date")
         return value if value else None
-    if typ == "unique_id":
+    if prop_type == "unique_id":
         value = prop.get("unique_id") or {}
         prefix = value.get("prefix")
         number = value.get("number")
         return f"{prefix}-{number}" if prefix and number is not None else number
-    return prop.get(typ)
+    return prop.get(prop_type)
 
 
 def summarize_page(page):
@@ -117,10 +118,10 @@ def summarize_page(page):
 
 
 def block_text(block):
-    typ = block.get("type")
-    data = block.get(typ, {}) if typ else {}
+    block_type = block.get("type")
+    data = block.get(block_type, {}) if block_type else {}
     text = plain_rich_text(data.get("rich_text"))
-    if typ == "to_do":
+    if block_type == "to_do":
         checked = "[x]" if data.get("checked") else "[ ]"
         return f"{checked} {text}".strip()
     return text
@@ -171,7 +172,7 @@ def update_status(page_id, token):
 def main():
     parser = argparse.ArgumentParser(description="Fetch and optionally start an Innopam Notion task.")
     parser.add_argument("task_id", help="Task ID such as TSK-3477 or 3477")
-    parser.add_argument("--config", default=".codex/config.toml", help="Path to config.toml containing NOTION_TOKEN")
+    parser.add_argument("--config", help="Optional config file containing NOTION_TOKEN")
     parser.add_argument("--start", action="store_true", help="Set status to 진행 중 unless terminal")
     parser.add_argument("--block-limit", type=int, default=100, help="Maximum page body blocks to return")
     args = parser.parse_args()
