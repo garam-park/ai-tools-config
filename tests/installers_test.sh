@@ -371,6 +371,11 @@ test_globals_doctor() {
     fail "알 수 없는 인자가 성공으로 보고되었습니다"
   fi
   assert_contains "$TEST_ROOT/doctor-globals.bogus" "사용법"
+
+  if HOME="$home" bash "$fixture/install-global-instructions.sh" doctor bogus-extra >"$TEST_ROOT/doctor-globals.extra" 2>&1; then
+    fail "서브커맨드 뒤 초과 인자가 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-globals.extra" "알 수 없는 인자"
   pass "globals doctor: 설치 전/후, 드리프트·사용자 파일 진단과 인자 검증"
 }
 
