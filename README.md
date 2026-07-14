@@ -81,7 +81,7 @@ cd ~/ai-tools-config
 ./install-global-instructions.sh doctor # 글로벌 지침 동기화 상태 점검
 ```
 
-- `install-skills.sh doctor`: 각 대상 경로에 링크가 존재하고 원본 스킬을 정확히 가리키는지, 실제 파일·디렉토리와 충돌하는지, 원본에서 사라진 스킬의 stale 링크가 남아 있는지 확인한다.
+- `install-skills.sh doctor`: 각 대상 경로에 링크가 존재하고 원본 스킬을 정확히 가리키는지, 실제 파일·디렉토리와 충돌하는지, 원본에서 사라진 스킬의 stale 링크나 타깃이 사라진 dangling 링크가 남아 있는지 확인한다.
 - `install-global-instructions.sh doctor`: 각 도구의 글로벌 지침 파일이 존재하고 자동 생성 마커가 있으며, 내용이 현재 원본(common + 도구별 델타)과 일치하는지 확인한다.
 
 ## 스킬 추가하기
