@@ -42,7 +42,6 @@ ai-tools-config/
 │       │   └── codex.yaml
 │       └── scripts/
 │           └── notion_task.py
-├── skill-candidates/                         # 미배포 스킬 검토 원본
 ├── tests/
 │   └── installers_test.sh
 ├── tasks/                                     # 추적되는 작업 카드와 상태 보드
@@ -55,38 +54,43 @@ ai-tools-config/
 
 ## 새 머신에서 사용하기
 
-> 전제: macOS 또는 Linux 같은 Unix 환경이 필요하다. Windows에서는 WSL을 권장하며, Git Bash를 쓸 경우에도 `ln -s`가 실제 심볼릭 링크를 만들 수 있어야 한다. `bash`, `rsync`, `chmod`가 설치되어 있어야 한다.
+> 전제: macOS 또는 Linux 같은 Unix 환경이 필요하다. Windows에서는 WSL을 권장하며, Git Bash를 쓸 경우에도 `ln -s`가 실제 심볼릭 링크를 만들 수 있어야 한다. `bash`가 설치되어 있어야 한다.
 
 ```bash
 # 1) 리포 clone
 git clone git@github.com:garam-park/ai-tools-config.git ~/ai-tools-config
+cd ~/ai-tools-config
 
-# 2) 공통 스킬 원본과 설치 스크립트 준비
-mkdir -p ~/.local/share/skills
-rsync -a ~/ai-tools-config/skills/ ~/.local/share/skills/
-cp ~/ai-tools-config/install-skills.sh ~/.local/share/skills/install-skills.sh
-chmod +x ~/.local/share/skills/install-skills.sh
+# 2) 네 도구가 읽는 개인 스킬 경로에 skills/ 심볼릭 링크 생성
+./install-skills.sh
 
-# 3) 네 도구가 읽는 개인 스킬 경로에 심볼릭 링크 생성
-bash ~/.local/share/skills/install-skills.sh
-
-# 4) 공통 지침과 도구별 지침 동기화
-bash ~/ai-tools-config/install-global-instructions.sh
+# 3) 공통 지침과 도구별 지침 동기화
+./install-global-instructions.sh
 ```
 
-`rsync`에는 `--delete`를 사용하지 않으므로 `~/.local/share/skills/`의 로컬 전용 스킬이나 설치 스크립트가 삭제되지 않는다. 제거된 리포 스킬의 도구별 심볼릭 링크는 설치 스크립트의 manifest가 관리 링크인지 확인한 뒤 정리한다.
+심볼릭 링크가 리포 작업 트리(`~/ai-tools-config/skills/`)를 직접 가리키므로, `git pull`만 하면 스킬 내용이 즉시 반영된다. `./install-skills.sh` 재실행은 스킬을 추가하거나 삭제했을 때만 필요하다. 제거된 리포 스킬의 도구별 심볼릭 링크는 설치 스크립트의 manifest가 관리 링크인지 확인한 뒤 정리한다.
+
+> 이전 구조(`~/.local/share/skills/` 중간 사본)에서 마이그레이션하려면 리포 루트에서 `./install-skills.sh`를 한 번 실행한다. 기존 심볼릭 링크가 리포 경로로 교체된다. 로컬 전용 스킬이 없다면 `~/.local/share/skills/`는 제거해도 된다.
+
+## 설치 상태 점검 (doctor)
+
+두 스크립트 모두 `doctor` 서브커맨드를 지원한다. 아무것도 변경하지 않고 설치 상태만 검사하며, 문제가 있으면 종료 코드 1을 반환한다.
+
+```bash
+./install-skills.sh doctor              # 스킬 링크 상태 점검
+./install-global-instructions.sh doctor # 글로벌 지침 동기화 상태 점검
+```
+
+- `install-skills.sh doctor`: 각 대상 경로에 링크가 존재하고 원본 스킬을 정확히 가리키는지, 실제 파일·디렉토리와 충돌하는지, 원본에서 사라진 스킬의 stale 링크나 타깃이 사라진 dangling 링크가 남아 있는지 확인한다.
+- `install-global-instructions.sh doctor`: 각 도구의 글로벌 지침 파일이 존재하고 자동 생성 마커가 있으며, 내용이 현재 원본(common + 도구별 델타)과 일치하는지 확인한다.
 
 ## 스킬 추가하기
 
 1. `skills/<name>/` 폴더를 만들고 그 안에 `SKILL.md`를 작성한다.
-2. 위 설치 절차의 2~3단계를 다시 실행한다.
+2. 리포 루트에서 `./install-skills.sh`를 다시 실행한다.
 3. `install-skills.sh`는 `SKILL.md`가 있는 폴더만 원본 스킬로 인식한다.
 
 실제 파일이나 디렉토리가 대상 경로에 이미 있으면 덮어쓰거나 삭제하지 않고 경고한다 (`--force` 옵션으로 백업 후 강제 교체 가능). 기존 심볼릭 링크만 안전하게 교체하며, 일부 링크 처리에 실패해도 나머지를 계속 시도한 뒤 비정상 종료한다.
-
-## 스킬 통합 후보
-
-`skill-candidates/`에는 로컬 사용자 스킬 경로에서 가져온 검토용 원본을 보관한다. 이 디렉터리는 설치 및 `rsync skills/` 대상이 아니며, 검토가 끝나 `skills/`로 이동한 스킬만 배포된다. 후보 목록과 검토 원칙은 [`skill-candidates/README.md`](skill-candidates/README.md)를 참고한다.
 
 ## 동기화되는 도구
 
@@ -110,7 +114,7 @@ Claude Code는 전용 개인 경로를 사용하고, Codex·GitHub Copilot·Open
 
 ## `install-skills.sh` 동작 방식
 
-1. 스크립트가 있는 폴더(`~/.local/share/skills/`)에서 `SKILL.md`가 있는 하위 폴더를 찾는다.
+1. 스크립트 옆의 `skills/`에서 `SKILL.md`가 있는 하위 폴더를 찾는다.
 2. Claude 전용 경로와 공통 Agent Skills 경로를 준비하고 각 스킬의 심볼릭 링크를 만든다.
 3. 실제 파일·디렉토리와 충돌하면 사용자 항목을 보존하고 경고한다 (`--force` 시 `.bak.<timestamp>` 백업 후 교체).
 4. `${XDG_STATE_HOME:-~/.local/state}/ai-tools-config/install-skills.manifest`에 성공한 관리 링크를 기록한다.
