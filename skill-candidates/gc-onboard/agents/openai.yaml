@@ -1,0 +1,4 @@
+interface:
+  display_name: "전역 컨텍스트 온보딩"
+  short_description: "gctree 브랜치에 전역 작업 문맥 저장"
+  default_prompt: "$gc-onboard를 사용해서 현재 gc-branch의 전역 컨텍스트 온보딩을 시작해줘."

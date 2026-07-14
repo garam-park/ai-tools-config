@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR 처리"
+  short_description: "기존 PR 리뷰, CI, 후속 수정 처리"
+  default_prompt: "$handle-pr TSK-0000을 사용해서 기존 PR을 확인하고 리뷰나 CI 문제를 처리해줘."

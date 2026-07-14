@@ -1,0 +1,4 @@
+interface:
+  display_name: "작업 시작"
+  short_description: "TSK ID로 Notion 작업 시작"
+  default_prompt: "$start-task TSK-3477"
