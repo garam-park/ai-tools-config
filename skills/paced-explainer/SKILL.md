@@ -12,11 +12,9 @@ Use this skill to regulate response size, sequence, and depth. Optimize for the 
 원본은 `~/.local/share/skills/paced-explainer/`이며, 아래 도구 경로는 모두 이곳을 가리키는 심볼릭 링크다. 어느 도구에서 호출되든 동작은 동일하다.
 
 - **Claude Code**: `~/.claude/skills/paced-explainer/`
-- **GitHub Copilot**: `~/.copilot/skills/paced-explainer/`
-- **Codex**: `~/.codex/skills/paced-explainer/`
-- **OpenCode**: `~/.config/opencode/skills/paced-explainer/`
+- **Codex / GitHub Copilot / OpenCode**: `~/.agents/skills/paced-explainer/`
 
-`agents/codex.yaml`은 Codex 전용 호출 메타데이터로, `$paced-explainer` 문법을 사용한다. ChatGPT/Custom GPT 등 다른 OpenAI 계열 클라이언트는 이 문법을 지원하지 않으며, 표시 이름·설명만 참고한다.
+`agents/openai.yaml`은 Codex와 ChatGPT 앱이 사용하는 선택적 UI 메타데이터다. 다른 도구는 공통 동작을 정의한 `SKILL.md`만 사용한다.
 
 ## Triggers
 

@@ -6,7 +6,7 @@
 
 ```text
 ai-tools-config/
-├── install-skills.sh                          # 4개 도구에 스킬 심볼릭 링크 생성
+├── install-skills.sh                          # 4개 도구가 읽는 2개 경로에 스킬 링크 생성
 ├── install-global-instructions.sh             # 공통 + 도구별 글로벌 지침 조립
 ├── global-instructions/
 │   ├── common.md                              # 모든 도구 공통 지침
@@ -14,11 +14,14 @@ ai-tools-config/
 │   ├── codex.md                               # Codex 전용 델타
 │   └── opencode.md                            # OpenCode 전용 델타
 ├── skills/
+│   ├── create-pr/
+│   │   ├── SKILL.md
+│   │   └── agents/
+│   │       └── openai.yaml
 │   └── paced-explainer/
 │       ├── SKILL.md
 │       ├── agents/
-│       │   ├── README.md
-│       │   └── codex.yaml
+│       │   └── openai.yaml
 │       └── references/
 │           └── depth-patterns.md
 ├── skill-candidates/                         # 미배포 스킬 검토 원본
@@ -44,7 +47,7 @@ rsync -a ~/ai-tools-config/skills/ ~/.local/share/skills/
 cp ~/ai-tools-config/install-skills.sh ~/.local/share/skills/install-skills.sh
 chmod +x ~/.local/share/skills/install-skills.sh
 
-# 3) 네 도구의 개인 스킬 경로에 심볼릭 링크 생성
+# 3) 네 도구가 읽는 개인 스킬 경로에 심볼릭 링크 생성
 bash ~/.local/share/skills/install-skills.sh
 
 # 4) 공통 지침과 도구별 지침 동기화
@@ -67,26 +70,28 @@ bash ~/ai-tools-config/install-global-instructions.sh
 
 ## 동기화되는 도구
 
-공식 Personal 스킬 경로에 맞춰 네 도구를 네 경로에 연결한다. VS Code의 Copilot은 `~/.claude/skills`도 호환 경로로 읽지만, 도구 간 소유권을 명확히 하기 위해 Copilot 전용 표준 경로를 사용한다.
+Claude Code는 전용 개인 경로를 사용하고, Codex·GitHub Copilot·OpenCode는 세 도구가 모두 공식 지원하는 공통 Agent Skills 경로를 사용한다. 같은 스킬을 여러 탐색 경로에 중복 설치하지 않는다.
 
 | 도구 | 개인 스킬 경로 | 스크립트 소스 | 비고 |
 |------|----------------|---------------|------|
-| Claude Code | `~/.claude/skills/` | `TARGETS[0]` | |
-| GitHub Copilot | `~/.copilot/skills/` | `TARGETS[1]` | VS Code는 `~/.claude/skills/`도 지원 |
-| Codex | `~/.codex/skills/` | `TARGETS[2]` | |
-| OpenCode | `~/.config/opencode/skills/` | `TARGETS[3]` | |
+| Claude Code | `~/.claude/skills/` | `TARGETS[0]` | Claude 전용 경로 |
+| Codex | `~/.agents/skills/` | `TARGETS[1]` | 공통 Agent Skills 경로 |
+| GitHub Copilot | `~/.agents/skills/` | `TARGETS[1]` | 공통 Agent Skills 경로 |
+| OpenCode | `~/.agents/skills/` | `TARGETS[1]` | 공통 Agent Skills 경로 |
 
 외부 경로는 다음 공식 문서와 플러그인 원문을 기준으로 확인했다.
 
+- 공통 Agent Skills 규격: [Agent Skills — Specification](https://agentskills.io/specification)
+- Codex Personal 스킬: [OpenAI — Build skills](https://learn.chatgpt.com/docs/build-skills.md)
+- Claude Code Personal 스킬: [Claude Code Docs — Extend Claude with skills](https://code.claude.com/docs/en/slash-commands)
 - GitHub Copilot Personal 스킬: [GitHub Docs — About agent skills](https://docs.github.com/en/copilot/concepts/agents/about-agent-skills)
-- VS Code의 호환 Personal 스킬 경로: [VS Code — Use Agent Skills](https://code.visualstudio.com/docs/agent-customization/agent-skills)
 - OpenCode 스킬과 글로벌 지침: [OpenCode — Agent Skills](https://opencode.ai/docs/skills), [OpenCode — Rules](https://opencode.ai/docs/rules)
 - oh-my-openagent 사용자 설정: [Configuration Reference](https://github.com/code-yeongyu/oh-my-openagent/blob/dev/docs/reference/configuration.md)
 
 ## `install-skills.sh` 동작 방식
 
 1. 스크립트가 있는 폴더(`~/.local/share/skills/`)에서 `SKILL.md`가 있는 하위 폴더를 찾는다.
-2. 네 대상 경로를 준비하고 각 스킬의 심볼릭 링크를 만든다.
+2. Claude 전용 경로와 공통 Agent Skills 경로를 준비하고 각 스킬의 심볼릭 링크를 만든다.
 3. 실제 파일·디렉토리와 충돌하면 사용자 항목을 보존하고 경고한다 (`--force` 시 `.bak.<timestamp>` 백업 후 교체).
 4. `${XDG_STATE_HOME:-~/.local/state}/ai-tools-config/install-skills.manifest`에 성공한 관리 링크를 기록한다.
 5. 다음 실행에서 원본이 사라진 관리 링크만 정리한다. 사용자가 바꾼 항목은 보존한다.
