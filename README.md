@@ -18,6 +18,10 @@ ai-tools-config/
 │   │   ├── SKILL.md
 │   │   └── agents/
 │   │       └── openai.yaml
+│   ├── handle-pr/
+│   │   ├── SKILL.md
+│   │   └── agents/
+│   │       └── openai.yaml
 │   └── paced-explainer/
 │       ├── SKILL.md
 │       ├── agents/
