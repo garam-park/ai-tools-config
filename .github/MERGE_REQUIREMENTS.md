@@ -17,8 +17,8 @@
 |----|------|-----------|---------|
 | M-1.1 | ShellCheck | `shellcheck --severity=warning install-skills.sh install-global-instructions.sh tests/installers_test.sh` exit 0 | PR 차단 |
 | M-1.2 | 설치 테스트 | `bash tests/installers_test.sh` exit 0 | PR 차단 |
-| M-1.3 | 커밋 메시지 규약 | 작업 카드 관련 커밋이 `(task NN)` 또는 `(tasks NN,MM)` 토큰을 가짐 ([tasks/STATUS.md](../tasks/STATUS.md) 규약) | 경고 → 운영자 판단 |
-| M-1.4 | 작업 카드 위치 | `tasks/001.todo/total/` 에 미완료 카드가 남지 않음 (또는 PR 본문에 사유 명시) | 경고 → 운영자 판단 |
+| M-1.3 | 커밋 메시지 규약 | 작업 카드 관련 커밋이 `(task NN)` 또는 `(tasks NN,MM)` 토큰을 가짐 ([docs/archive/tasks/STATUS.md](../docs/archive/tasks/STATUS.md) 규약) | 경고 → 운영자 판단 |
+| M-1.4 | 작업 카드 위치 | (은퇴 — 2026-07-15) 작업 카드가 `docs/archive/tasks/`로 아카이브되어 검사 대상이 없음 | — |
 | M-1.5 | AI 트레일러 부재 | 커밋 메시지에 `Co-Authored-By: Claude`, `Generated with Claude Code` 등 AI 푸터 없음 | PR 차단 |
 | M-1.6 | agents 디렉토리 무결성 | `agents/codex.yaml` 존재 + `agents/openai.yaml` 부재 | PR 차단 |
 
@@ -26,11 +26,9 @@
 
 PR 본문은 [`.github/PULL_REQUEST_TEMPLATE.md`](../.github/PULL_REQUEST_TEMPLATE.md)을 사용하며, 다음을 모두 체크해야 한다.
 
-- [ ] 관련 작업 카드 번호 명시 (`tasks/002.done/total/NN-*.md`)
 - [ ] 변경 요약 (코드/스크립트/문서/CI 중 무엇이 바뀌었는지)
 - [ ] 위험 평가 (사용자 파일을 건드릴 가능성, 백업 동작, 롤백 방법)
 - [ ] 테스트 결과 요약 (어떤 케이스를 추가/실행했는지)
-- [ ] 문서/작업 카드 이동 (`git mv` 또는 STATUS.md 갱신 여부)
 
 ## M-3. 사람 리뷰어 승인 (필수, 사람 판정)
 
@@ -72,4 +70,5 @@ test -f skills/paced-explainer/agents/codex.yaml && ! -e skills/paced-explainer/
 ## 변경 이력
 
 - 2026-07-14: 초안 작성 (1차 사이클 total 머지용)
-- 2026-07-14: M-1.3을 경고성(advisory)으로 완화 — 토큰 규약은 작업 카드 관련 커밋에만 적용되므로([tasks/STATUS.md](../tasks/STATUS.md)) 전 커밋 차단은 과잉 강제
+- 2026-07-14: M-1.3을 경고성(advisory)으로 완화 — 토큰 규약은 작업 카드 관련 커밋에만 적용되므로([docs/archive/tasks/STATUS.md](../docs/archive/tasks/STATUS.md)) 전 커밋 차단은 과잉 강제
+- 2026-07-15: 작업 카드가 `docs/archive/tasks/`로 아카이브되어 M-1.4 은퇴, M-2에서 작업 카드 항목 제거
