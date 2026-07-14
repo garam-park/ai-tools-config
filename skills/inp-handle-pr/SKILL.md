@@ -1,6 +1,6 @@
 ---
-name: handle-pr
-description: Drive an existing Innopam task pull request through review, CI diagnosis, follow-up fixes, verification, and merge-readiness reporting. Use when the user invokes handle-pr with `$handle-pr` or `/handle-pr`, provides an existing PR, asks to address review comments or failing checks, requests focused or multi-perspective review, or wants the PR prepared for merge. Do not use to open the initial PR; use create-pr when no PR exists.
+name: inp-handle-pr
+description: Drive an existing Innopam task pull request through review, CI diagnosis, follow-up fixes, verification, and merge-readiness reporting. Use when the user invokes `$inp-handle-pr` or `/inp-handle-pr`, provides an existing Innopam PR, asks to address review comments or failing checks, requests focused or multi-perspective review, or wants the PR prepared for merge. Do not use to open the initial PR; use inp-create-pr when no PR exists.
 ---
 
 # Handle PR
@@ -12,7 +12,7 @@ Handle an existing task PR from review through verified follow-up. Finish withou
 1. Accept a task ID, PR URL, PR number, branch name, or current branch. Normalize numeric task IDs to `TSK-<number>`.
 2. Read the repository README and inspect local branch state before querying external systems.
 3. Prefer an available GitHub integration for PR metadata, comments, reviews, and checks. Use the non-interactive `gh` CLI when equivalent integration coverage is unavailable.
-4. Confirm that the PR, branch, repository, and task refer to the same work. If no PR exists, stop and direct the user to `create-pr` unless they explicitly requested an end-to-end flow.
+4. Confirm that the PR, branch, repository, and task refer to the same work. If no PR exists, stop and direct the user to `inp-create-pr` unless they explicitly requested an end-to-end flow.
 
 ## Establish the review target
 

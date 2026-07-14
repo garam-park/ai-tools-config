@@ -1,6 +1,6 @@
 ---
-name: spec-task
-description: Refine an Innopam `솔루션 개발팀 작업` item into an implementation-ready specification without creating branches or editing product code. Use when the user invokes spec-task with `$spec-task` or `/spec-task`, asks to clarify or concretize a TSK task, draft requirements and acceptance criteria, identify material open questions, or prepare a task before implementation. Draft first and update Notion or a local task file only after the user approves the specification and destination.
+name: inp-spec-task
+description: Refine an Innopam `솔루션 개발팀 작업` item into an implementation-ready specification without creating branches or editing product code. Use when the user invokes `$inp-spec-task` or `/inp-spec-task`, asks to clarify or concretize an Innopam TSK task, draft requirements and acceptance criteria, identify material open questions, or prepare an Innopam task before implementation. Draft first and update Notion or a local task file only after the user approves the specification and destination.
 ---
 
 # Spec Task

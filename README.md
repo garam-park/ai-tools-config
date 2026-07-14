@@ -14,15 +14,15 @@ ai-tools-config/
 │   ├── codex.md                               # Codex 전용 델타
 │   └── opencode.md                            # OpenCode 전용 델타
 ├── skills/
-│   ├── analyze-task/
+│   ├── inp-analyze-task/
 │   │   ├── SKILL.md
 │   │   └── agents/
 │   │       └── openai.yaml
-│   ├── create-pr/
+│   ├── inp-create-pr/
 │   │   ├── SKILL.md
 │   │   └── agents/
 │   │       └── openai.yaml
-│   ├── handle-pr/
+│   ├── inp-handle-pr/
 │   │   ├── SKILL.md
 │   │   └── agents/
 │   │       └── openai.yaml
@@ -32,11 +32,11 @@ ai-tools-config/
 │       │   └── openai.yaml
 │       └── references/
 │           └── depth-patterns.md
-│   ├── spec-task/
+│   ├── inp-spec-task/
 │   │   ├── SKILL.md
 │   │   └── agents/
 │   │       └── openai.yaml
-│   └── start-task/
+│   └── inp-start-task/
 │       ├── SKILL.md
 │       ├── agents/
 │       │   └── openai.yaml
@@ -50,6 +50,8 @@ ai-tools-config/
 ├── .gitignore
 └── README.md
 ```
+
+`inp-` 접두사는 Innopam 전용 작업·PR 워크플로를 뜻한다. 범용 스킬과 이름이 충돌하지 않도록 이노팸의 `TSK-*` 작업을 다루는 스킬에만 사용한다.
 
 ## 새 머신에서 사용하기
 

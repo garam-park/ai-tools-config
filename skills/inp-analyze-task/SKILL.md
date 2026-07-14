@@ -1,6 +1,6 @@
 ---
-name: analyze-task
-description: Read and explain an Innopam `솔루션 개발팀 작업` item without changing Notion, files, code, branches, commits, or pull requests. Use when the user invokes analyze-task with `$analyze-task` or `/analyze-task`, provides a TSK task ID or task URL, asks what a task means, or needs its purpose, scope, requirements, risks, affected repositories, open questions, and recommended next workflow understood before specification, implementation, or PR work.
+name: inp-analyze-task
+description: Read and explain an Innopam `솔루션 개발팀 작업` item without changing Notion, files, code, branches, commits, or pull requests. Use when the user invokes `$inp-analyze-task` or `/inp-analyze-task`, provides an Innopam TSK task ID or task URL, asks what an Innopam task means, or needs its purpose, scope, requirements, risks, affected repositories, open questions, and recommended next workflow understood before specification, implementation, or PR work.
 ---
 
 # 작업 분석
