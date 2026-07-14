@@ -338,6 +338,13 @@ test_skills_doctor() {
   assert_contains "$TEST_ROOT/doctor-skills.dangling" "dangling 링크"
   rm "$home/.claude/skills/orphan"
 
+  rm "$home/.claude/skills/paced-explainer"
+  mkdir -p "$home/.claude/skills/paced-explainer"
+  if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.collision" 2>&1; then
+    fail "실제 디렉토리 충돌이 doctor에서 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.collision" "실제 파일/디렉토리"
+
   if HOME="$home" bash "$fixture/install-skills.sh" bogus >"$TEST_ROOT/doctor-skills.bogus" 2>&1; then
     fail "알 수 없는 인자가 성공으로 보고되었습니다"
   fi
@@ -374,6 +381,16 @@ test_globals_doctor() {
   run_globals "$fixture" "$home" >/dev/null
   run_globals_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-globals.fixed" 2>&1
   assert_contains "$TEST_ROOT/doctor-globals.fixed" "문제 없음"
+
+  local ext="$TEST_ROOT/doctor-globals/ext/claude.md"
+  mkdir -p "$(dirname "$ext")"
+  printf '외부 원본\n' > "$ext"
+  rm "$home/.claude/CLAUDE.md"
+  ln -s "$ext" "$home/.claude/CLAUDE.md"
+  run_globals "$fixture" "$home" >/dev/null 2>&1
+  run_globals_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-globals.symlink" 2>&1
+  assert_contains "$TEST_ROOT/doctor-globals.symlink" "문제 없음"
+  assert_symlink "$home/.claude/CLAUDE.md"
 
   if HOME="$home" bash "$fixture/install-global-instructions.sh" bogus >"$TEST_ROOT/doctor-globals.bogus" 2>&1; then
     fail "알 수 없는 인자가 성공으로 보고되었습니다"
