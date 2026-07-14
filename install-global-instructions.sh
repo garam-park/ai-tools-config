@@ -32,6 +32,11 @@ case "${1:-}" in
     exit 2
     ;;
 esac
+if [[ $# -gt 1 ]]; then
+  echo "알 수 없는 인자입니다: $2" >&2
+  echo "사용법: $0 [install|doctor]" >&2
+  exit 2
+fi
 
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC="$SRC_DIR/global-instructions"
