@@ -12,13 +12,14 @@
 # 새 머신에서:
 #   1) 이 스크립트와 스킬 폴더(SKILL.md 포함)를 ~/.local/share/skills/ 아래에 둔다
 #   2) chmod +x install-skills.sh && ./install-skills.sh
+#
+# 사용법:
+#   ./install-skills.sh [install] [--force]   # 설치/동기화 (기본)
+#   ./install-skills.sh doctor                # 변경 없이 설치 상태만 검사 (문제 시 exit 1)
 
 set -euo pipefail
 shopt -s nullglob
 shopt -s inherit_errexit 2>/dev/null || true   # bash 4.4+: command substitution도 errexit 상속
-
-FORCE=0
-[[ "${1:-}" == "--force" ]] && FORCE=1
 
 # 원본 폴더 (이 스크립트가 있는 폴더)
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -50,6 +51,30 @@ is_known_target() {
   return 1
 }
 
+usage() {
+  echo "사용법: $0 [install [--force] | doctor]" >&2
+}
+
+CMD="install"
+case "${1:-}" in
+  install|doctor)
+    CMD="$1"
+    shift
+    ;;
+esac
+
+FORCE=0
+if [[ "$CMD" == "install" && "${1:-}" == "--force" ]]; then
+  FORCE=1
+  shift
+fi
+
+if [[ $# -gt 0 ]]; then
+  error "알 수 없는 인자입니다: $1"
+  usage
+  exit 2
+fi
+
 if [[ ! -d "$SRC_DIR" ]]; then
   error "원본 폴더를 찾을 수 없습니다: $SRC_DIR"
   exit 1
@@ -70,6 +95,74 @@ done
 
 if [[ ${#skill_dirs[@]} -eq 0 ]]; then
   warn "$SRC_DIR 에 SKILL.md가 있는 스킬이 없습니다. 디렉토리 구조를 확인하세요."
+  exit 1
+fi
+
+# doctor: 아무것도 변경하지 않고 설치 상태만 검사한다.
+if [[ "$CMD" == "doctor" ]]; then
+  ok_count=0
+  problem_count=0
+
+  report_ok() {
+    echo "  ok: $*"
+    ok_count=$((ok_count + 1))
+  }
+
+  report_problem() {
+    echo "  problem: $*"
+    problem_count=$((problem_count + 1))
+  }
+
+  for target in "${TARGETS[@]}"; do
+    echo "[$target]"
+    if [[ ! -d "$target" ]]; then
+      report_problem "디렉토리가 없습니다. install을 실행하세요."
+      echo
+      continue
+    fi
+
+    for skill_dir in "${skill_dirs[@]}"; do
+      name="$(basename "$skill_dir")"
+      link="$target/$name"
+      if [[ -L "$link" ]]; then
+        actual="$(readlink "$link")"
+        if [[ "$actual" == "$skill_dir" ]]; then
+          report_ok "$name"
+        else
+          report_problem "$name: 링크가 다른 곳을 가리킵니다 ($actual)"
+        fi
+      elif [[ -e "$link" ]]; then
+        report_problem "$name: 심볼릭 링크가 아닌 실제 파일/디렉토리입니다 (install --force 로 백업 후 교체 가능)"
+      else
+        report_problem "$name: 링크가 없습니다. install을 실행하세요."
+      fi
+    done
+
+    # 원본에서 사라진 스킬을 여전히 가리키는 stale 링크 탐지
+    for link in "$target"/*; do
+      [[ -L "$link" ]] || continue
+      actual="$(readlink "$link")"
+      [[ "$actual" == "$SRC_DIR"/* ]] || continue
+      name="$(basename "$link")"
+      is_current=0
+      for skill_dir in "${skill_dirs[@]}"; do
+        if [[ "$name" == "$(basename "$skill_dir")" ]]; then
+          is_current=1
+          break
+        fi
+      done
+      if [[ "$is_current" -eq 0 ]]; then
+        report_problem "$name: 원본에 없는 스킬을 가리키는 stale 링크입니다 ($actual)"
+      fi
+    done
+    echo
+  done
+
+  if [[ "$problem_count" -eq 0 ]]; then
+    echo "doctor: 문제 없음 (${ok_count}개 링크 확인)."
+    exit 0
+  fi
+  echo "doctor: ${problem_count}개 문제 발견. ./install-skills.sh 를 실행해 동기화하세요."
   exit 1
 fi
 
