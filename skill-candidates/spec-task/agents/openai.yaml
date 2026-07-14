@@ -1,4 +1,0 @@
-interface:
-  display_name: "작업 명세화"
-  short_description: "Notion 작업을 구현 가능한 명세로 정리"
-  default_prompt: "$spec-task TSK-1234를 사용해서 작업을 구체화하고 구현 가능한 명세를 작성해줘."
