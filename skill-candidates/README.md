@@ -8,7 +8,6 @@
 
 원본 위치: `~/.codex/skills/`
 
-- `analyze-task`
 - `end-chat`
 - `gc-onboard`
 - `gc-resolve-context`
@@ -26,6 +25,7 @@
 
 ## 유지 결정
 
+- `analyze-task` — **수정 후 유지**. `~/.codex` 헬퍼 경로를 제거하고, 현재 도구의 Notion 연동을 우선 사용하되 사용할 수 없으면 로컬 문맥으로 읽기 전용 분석을 계속하도록 정리해 `skills/analyze-task/`로 이동한다. 설치 전 검증 단계까지는 실제 사용자 스킬 경로에 배포하지 않는다.
 - `create-pr` — **수정 후 유지**. 특정 도구의 호출·서브에이전트 문법을 제거하고 공통 Agent Skills 형식으로 정리해 `skills/create-pr/`로 이동한다. 설치 전 검증 단계까지는 실제 사용자 스킬 경로에 배포하지 않는다.
 - `handle-pr` — **수정 후 유지**. GitHub 연동과 독립 작업자 사용을 기능 기반 선택사항으로 바꾸고, 기존 PR의 리뷰·CI·후속 수정·머지 준비 조정 역할을 유지해 `skills/handle-pr/`로 이동한다. 설치 전 검증 단계까지는 실제 사용자 스킬 경로에 배포하지 않는다.
 
