@@ -15,7 +15,7 @@
 
 | ID | 검사 | 판정 기준 | 실패 시 |
 |----|------|-----------|---------|
-| M-1.1 | ShellCheck | `shellcheck --severity=warning install-skills.sh install-global-instructions.sh tests/installers_test.sh` exit 0 | PR 차단 |
+| M-1.1 | ShellCheck | `shellcheck --severity=warning bootstrap.sh install-skills.sh install-global-instructions.sh tests/installers_test.sh` exit 0 | PR 차단 |
 | M-1.2 | 설치 테스트 | `bash tests/installers_test.sh` exit 0 | PR 차단 |
 | M-1.3 | 커밋 메시지 규약 | 작업 카드 관련 커밋이 `(task NN)` 또는 `(tasks NN,MM)` 토큰을 가짐 ([docs/archive/tasks/STATUS.md](../docs/archive/tasks/STATUS.md) 규약) | 경고 → 운영자 판단 |
 | M-1.4 | 작업 카드 위치 | (은퇴 — 2026-07-15) 작업 카드가 `docs/archive/tasks/`로 아카이브되어 검사 대상이 없음 | — |
@@ -59,7 +59,7 @@ PR 본문은 [`.github/PULL_REQUEST_TEMPLATE.md`](../.github/PULL_REQUEST_TEMPLA
 
 ```bash
 bash tests/installers_test.sh
-shellcheck --severity=warning install-skills.sh install-global-instructions.sh tests/installers_test.sh
+shellcheck --severity=warning bootstrap.sh install-skills.sh install-global-instructions.sh tests/installers_test.sh
 git log main..HEAD --pretty='%s' | grep -vE '\(tasks? [0-9, \-]+\)' && echo "경고: 작업 토큰 없는 커밋 — 작업 카드 관련이면 토큰 추가" || echo "OK"
 git log main..HEAD --pretty='%s' | grep -iE 'co-authored-by|generated with' && echo "FAIL: AI 트레일러" || echo "OK"
 test -f skills/paced-explainer/agents/codex.yaml && ! -e skills/paced-explainer/agents/openai.yaml && echo "OK" || echo "FAIL"
@@ -72,3 +72,4 @@ test -f skills/paced-explainer/agents/codex.yaml && ! -e skills/paced-explainer/
 - 2026-07-14: 초안 작성 (1차 사이클 total 머지용)
 - 2026-07-14: M-1.3을 경고성(advisory)으로 완화 — 토큰 규약은 작업 카드 관련 커밋에만 적용되므로([docs/archive/tasks/STATUS.md](../docs/archive/tasks/STATUS.md)) 전 커밋 차단은 과잉 강제
 - 2026-07-15: 작업 카드가 `docs/archive/tasks/`로 아카이브되어 M-1.4 은퇴, M-2에서 작업 카드 항목 제거
+- 2026-07-15: M-1.1 검사 대상에 `bootstrap.sh` 추가
