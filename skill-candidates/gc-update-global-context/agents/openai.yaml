@@ -1,0 +1,4 @@
+interface:
+  display_name: "전역 컨텍스트 업데이트"
+  short_description: "gctree 브랜치의 지속 문맥 갱신"
+  default_prompt: "$gc-update-global-context를 사용해서 방금 알게 된 내용을 전역 컨텍스트에 저장해줘."

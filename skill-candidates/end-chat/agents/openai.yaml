@@ -1,0 +1,4 @@
+interface:
+  display_name: "대화 종료"
+  short_description: "대화 요약을 Anytype Codex에 저장"
+  default_prompt: "$end-chat"

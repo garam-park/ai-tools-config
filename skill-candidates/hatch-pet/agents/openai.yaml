@@ -1,0 +1,4 @@
+interface:
+  display_name: "펫 만들기"
+  short_description: "Codex용 애니메이션 펫 제작"
+  default_prompt: "$hatch-pet을 사용해서 컨셉, 회사 브랜드, 참고 이미지 기반의 Codex 호환 애니메이션 펫을 만들어줘."
