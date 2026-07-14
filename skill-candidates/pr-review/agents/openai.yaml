@@ -1,4 +1,0 @@
-interface:
-  display_name: "PR 리뷰"
-  short_description: "기존 통합 PR 흐름 라우팅"
-  default_prompt: "$pr-review TSK-0000을 사용해서 기존 PR 요청을 적절한 흐름으로 처리해줘."
