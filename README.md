@@ -21,6 +21,7 @@ ai-tools-config/
 │       │   └── codex.yaml
 │       └── references/
 │           └── depth-patterns.md
+├── skill-candidates/                         # 미배포 스킬 검토 원본
 ├── tests/
 │   └── installers_test.sh
 ├── tasks/                                     # 추적되는 작업 카드와 상태 보드
@@ -59,6 +60,10 @@ bash ~/ai-tools-config/install-global-instructions.sh
 3. `install-skills.sh`는 `SKILL.md`가 있는 폴더만 원본 스킬로 인식한다.
 
 실제 파일이나 디렉토리가 대상 경로에 이미 있으면 덮어쓰거나 삭제하지 않고 경고한다 (`--force` 옵션으로 백업 후 강제 교체 가능). 기존 심볼릭 링크만 안전하게 교체하며, 일부 링크 처리에 실패해도 나머지를 계속 시도한 뒤 비정상 종료한다.
+
+## 스킬 통합 후보
+
+`skill-candidates/`에는 로컬 사용자 스킬 경로에서 가져온 검토용 원본을 보관한다. 이 디렉터리는 설치 및 `rsync skills/` 대상이 아니며, 검토가 끝나 `skills/`로 이동한 스킬만 배포된다. 후보 목록과 검토 원칙은 [`skill-candidates/README.md`](skill-candidates/README.md)를 참고한다.
 
 ## 동기화되는 도구
 
