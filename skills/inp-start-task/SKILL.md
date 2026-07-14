@@ -1,6 +1,6 @@
 ---
-name: start-task
-description: Start an Innopam Notion work item by TSK ID, move it to in progress, prepare a feature branch, and implement it in the target repository. Use when the user invokes `$start-task`, asks to start or implement a task such as `TSK-3477`, or asks to begin the task in a separate git worktree.
+name: inp-start-task
+description: Start an Innopam Notion work item by TSK ID, move it to in progress, prepare a feature branch, and implement it in the target repository. Use when the user invokes `$inp-start-task`, asks to start or implement an Innopam task such as `TSK-3477`, or asks to begin the task in a separate git worktree.
 ---
 
 # Start Task

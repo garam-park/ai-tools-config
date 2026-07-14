@@ -1,0 +1,4 @@
+interface:
+  display_name: "INP 작업 명세화"
+  short_description: "이노팸 TSK 작업을 구현 가능한 요구사항과 인수 조건으로 구체화합니다"
+  default_prompt: "$inp-spec-task를 사용해 이 TSK 작업을 구체화하고 구현 가능한 명세 초안을 작성해줘."

@@ -1,6 +1,6 @@
 ---
-name: create-pr
-description: Prepare and open an Innopam task pull request from a local task branch. Use when the user explicitly invokes create-pr with `$create-pr` or `/create-pr`, or asks to validate a task branch, push its commits, open or update its initial PR, write the PR body, or document merge criteria. Stop after the PR is ready for review. Do not use for review comments, failing checks, or follow-up fixes on an already-open PR; use handle-pr for those.
+name: inp-create-pr
+description: Prepare and open an Innopam task pull request from a local task branch. Use when the user invokes `$inp-create-pr` or `/inp-create-pr`, or asks to validate an Innopam task branch, push its commits, open or update its initial PR, write the PR body, or document merge criteria. Stop after the PR is ready for review. Do not use for review comments, failing checks, or follow-up fixes on an already-open PR; use inp-handle-pr for those.
 ---
 
 # Create PR
@@ -35,7 +35,7 @@ Do not stash, reset, rebase, delete branches, or overwrite user work without exp
 1. Prefer an available GitHub integration for PR metadata and creation. Use the non-interactive `gh` CLI when no equivalent integration is available.
 2. Detect an existing PR for the branch before creating one.
 3. Create a PR against the confirmed base when none exists. Include the task ID, behavior change, verification, documentation, and residual risk.
-4. If the same task PR already exists, update missing initial details only when clearly safe, then stop and direct follow-up work to `handle-pr`.
+4. If the same task PR already exists, update missing initial details only when clearly safe, then stop and direct follow-up work to `inp-handle-pr`.
 
 ## Document merge criteria
 
@@ -55,4 +55,4 @@ Do not merge the PR. Report:
 - verification performed
 - merge-criteria status and whether it was independently drafted
 - residual risk
-- the next action, normally `handle-pr <task-id>`
+- the next action, normally `inp-handle-pr <task-id>`
