@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
 # install-skills.sh
 #
-# 원본: 이 스크립트가 있는 폴더의 skills/<name>/
+# 원본: 이 스크립트 옆의 skills/<name>/ (SKILL.md 포함)
 # 공통 Agent Skills 경로와 Claude Code 경로에 심볼릭 링크를 만들어 동기화한다.
+# 링크가 리포 작업 트리를 직접 가리키므로 git pull만으로 스킬 내용이 반영된다.
 # 멱등성 보장: 여러 번 실행해도 같은 결과.
 #
 # 사용자가 손으로 만든 실제 파일/디렉토리는 삭제하지 않는다.
 # 강제 교체가 필요하면 --force (백업 후 교체).
 # 원본에서 사라진 스킬의 관리 링크는 manifest로 추적해 안전히 정리한다.
 #
-# 새 머신에서:
-#   1) 이 스크립트와 스킬 폴더(SKILL.md 포함)를 ~/.local/share/skills/ 아래에 둔다
-#   2) chmod +x install-skills.sh && ./install-skills.sh
+# 새 머신에서: git clone 후 리포 루트에서 ./install-skills.sh
 #
 # 사용법:
 #   ./install-skills.sh [install] [--force]   # 설치/동기화 (기본)
@@ -21,8 +20,8 @@ set -euo pipefail
 shopt -s nullglob
 shopt -s inherit_errexit 2>/dev/null || true   # bash 4.4+: command substitution도 errexit 상속
 
-# 원본 폴더 (이 스크립트가 있는 폴더)
-SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# 원본 폴더 (이 스크립트 옆의 skills/)
+SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/skills"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/ai-tools-config"
 MANIFEST="$STATE_DIR/install-skills.manifest"
 
