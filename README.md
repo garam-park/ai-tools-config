@@ -17,29 +17,29 @@ ai-tools-config/
 │   ├── inp-analyze-task/
 │   │   ├── SKILL.md
 │   │   └── agents/
-│   │       └── openai.yaml
+│   │       └── codex.yaml
 │   ├── inp-create-pr/
 │   │   ├── SKILL.md
 │   │   └── agents/
-│   │       └── openai.yaml
+│   │       └── codex.yaml
 │   ├── inp-handle-pr/
 │   │   ├── SKILL.md
 │   │   └── agents/
-│   │       └── openai.yaml
+│   │       └── codex.yaml
 │   ├── paced-explainer/
 │       ├── SKILL.md
 │       ├── agents/
-│       │   └── openai.yaml
+│       │   └── codex.yaml
 │       └── references/
 │           └── depth-patterns.md
 │   ├── inp-spec-task/
 │   │   ├── SKILL.md
 │   │   └── agents/
-│   │       └── openai.yaml
+│   │       └── codex.yaml
 │   └── inp-start-task/
 │       ├── SKILL.md
 │       ├── agents/
-│       │   └── openai.yaml
+│       │   └── codex.yaml
 │       └── scripts/
 │           └── notion_task.py
 ├── skill-candidates/                         # 미배포 스킬 검토 원본
