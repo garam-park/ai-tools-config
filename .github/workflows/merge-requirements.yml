@@ -18,13 +18,13 @@ jobs:
         uses: ludeeus/action-shellcheck@2.0.0
         with:
           severity: warning
-          additional_files: install-skills.sh install-global-instructions.sh tests/installers_test.sh
+          additional_files: bootstrap.sh install-skills.sh install-global-instructions.sh tests/installers_test.sh
 
       - name: Run installer tests
         run: bash tests/installers_test.sh
 
   # M-1.3: 커밋 메시지 (task NN) / (tasks NN,MM) 토큰 (경고성 — 운영자 판단)
-  # 토큰 규약은 작업 카드 관련 커밋에만 적용되므로(tasks/STATUS.md) 전 커밋 차단은 하지 않는다.
+  # 토큰 규약은 작업 카드 관련 커밋에만 적용되므로(docs/archive/tasks/STATUS.md) 전 커밋 차단은 하지 않는다.
   commit-convention:
     name: Commit message convention (advisory)
     runs-on: ubuntu-latest
@@ -92,23 +92,3 @@ jobs:
             exit 1
           fi
           echo "OK: agents/ 무결성 검사 통과."
-
-  # M-1.4: 작업 카드 위치 (경고성 — 운영자 판단)
-  tasks-policy:
-    name: tasks/ policy (advisory)
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - name: Check no unfinished task cards in 001.todo/
-        run: |
-          set +e
-          if [ -d tasks/001.todo/total ]; then
-            count=$(find tasks/001.todo/total -name '*.md' -not -name 'README.md' | wc -l | tr -d ' ')
-            if [ "$count" -gt 0 ]; then
-              echo "::warning::tasks/001.todo/total/ 에 미완료 카드가 ${count}건 있습니다."
-              echo "::warning::머지 전 002.done/total/ 로 이동하거나 PR 본문에 사유를 명시하세요."
-            fi
-          else
-            echo "OK: 001.todo/total/ 디렉토리가 없습니다 (모두 완료됨)."
-          fi

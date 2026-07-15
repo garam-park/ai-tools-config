@@ -22,7 +22,7 @@
 ## 작업 흐름 예시
 
 ```
-[tasks/001.todo/total/NN-*.md]
+[작업 요청 또는 작업 카드]
         │
         ▼
    implementer (코드 작성 + 커밋)
@@ -45,9 +45,8 @@
 자세한 조건은 [MERGE_REQUIREMENTS.md](../MERGE_REQUIREMENTS.md) 참조.
 
 요약:
-- CI 자동 검사 모두 통과 (ShellCheck clean + 테스트 exit 0 + 작업 카드 위치 검증)
-- 커밋 메시지 규약 준수 (`(task NN)` 또는 `(tasks NN,MM)`)
-- PR 본문에 작업 카드 번호 명시
+- CI 자동 검사 모두 통과 (ShellCheck clean + 테스트 exit 0)
+- 커밋 메시지 규약 준수 (작업 카드 관련 커밋에 한해 `(task NN)` 또는 `(tasks NN,MM)`)
 - 사람 운영자 리뷰 승인
 
 **에이전트는 위 조건을 "판정"하지 않는다. CI 룰이 판정하고, 사람이 최종 승인한다.**
