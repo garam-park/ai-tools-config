@@ -105,6 +105,7 @@ declare -a TARGETS=(
   "$HOME/.claude/CLAUDE.md|claude.md"
   "$HOME/.codex/AGENTS.md|codex.md"
   "$HOME/.config/opencode/AGENTS.md|opencode.md"
+  "$HOME/.copilot/copilot-instructions.md|copilot.md"
 )
 
 if [[ ! -f "$COMMON" ]]; then
