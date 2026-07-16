@@ -74,7 +74,7 @@ jobs:
           fi
           echo "OK: AI 트레일러가 없습니다."
 
-  # M-1.6: agents 디렉토리 무결성 (codex.yaml 존재, openai.yaml 부재)
+  # M-1.6: agents 디렉토리 무결성 (모든 스킬에 codex.yaml 존재, openai.yaml 부재)
   agents-integrity:
     name: agents/ integrity
     runs-on: ubuntu-latest
@@ -83,12 +83,21 @@ jobs:
       - name: Check codex.yaml exists, openai.yaml removed
         run: |
           set -euo pipefail
-          if [ ! -f skills/paced-explainer/agents/codex.yaml ]; then
-            echo "::error::skills/paced-explainer/agents/codex.yaml 이 없습니다."
+          # skills/<name>/SKILL.md 가 있는 모든 스킬에 agents/codex.yaml 이 있어야 한다
+          missing=0
+          for d in skills/*/; do
+            [[ -f "${d}SKILL.md" ]] || continue
+            [[ -f "${d}agents/codex.yaml" ]] || {
+              echo "::error::${d}agents/codex.yaml 이 없습니다."
+              missing=1
+            }
+          done
+          # 옛 agents/openai.yaml 가 어디에도 남아있으면 안 된다
+          if find skills -path '*/agents/openai.yaml' -print -quit 2>/dev/null | grep -q .; then
+            echo "::error::옛 agents/openai.yaml 가 아직 존재합니다. 제거하세요."
+            missing=1
+          fi
+          if [ "$missing" -ne 0 ]; then
             exit 1
           fi
-          if [ -e skills/paced-explainer/agents/openai.yaml ]; then
-            echo "::error::skills/paced-explainer/agents/openai.yaml 이 아직 존재합니다. 제거하세요."
-            exit 1
-          fi
-          echo "OK: agents/ 무결성 검사 통과."
+          echo "OK: agents/ 무결성 검사 통과 (codex.yaml 전 스킬 보유, openai.yaml 부재)."

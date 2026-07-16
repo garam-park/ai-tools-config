@@ -47,7 +47,7 @@
 ### 이름 규칙
 
 - `inp-` 접두사는 Innopam 전용 작업·PR 워크플로(`TSK-*`)에만 사용한다. 범용 스킬과 이름이 충돌하지 않게 하기 위한 네임스페이스다.
-- 참고: CI의 `agents-integrity` 검사는 현재 `skills/paced-explainer/agents/codex.yaml`만 확인한다. 전 스킬 루프 검사로 강화하는 것이 후속 작업 후보다.
+- 참고: CI의 `agents-integrity` 검사는 `skills/<name>/SKILL.md`가 있는 모든 스킬에 대해 `agents/codex.yaml` 존재를 검사하고, 옛 `agents/openai.yaml` 부재도 함께 검사한다.
 
 ## 새 도구 타깃 추가 (스킬 설치 경로)
 

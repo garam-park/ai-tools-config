@@ -253,7 +253,11 @@ test_global_first_repeat_and_backup() {
   assert_contains "$home/.claude/CLAUDE.md" '사용자가 `/paced-explainer`를 입력하면'
   assert_contains "$home/.codex/AGENTS.md" '사용자가 `$스킬명` 형식으로 스킬을 지정하면'
   assert_contains "$home/.config/opencode/AGENTS.md" '`sisyphus` 에이전트를 기본값으로 사용해요.'
+  assert_contains "$home/.copilot/copilot-instructions.md" "AUTO-GENERATED-DO-NOT-EDIT"
+  assert_contains "$home/.copilot/copilot-instructions.md" "GitHub Copilot CLI"
+  assert_contains "$home/.copilot/copilot-instructions.md" "위험 명령"
   assert_no_glob "$home/.claude/CLAUDE.md.bak.*"
+  assert_no_glob "$home/.copilot/copilot-instructions.md.bak.*"
 
   printf '내 지침\n' > "$home/.codex/AGENTS.md"
   run_globals "$fixture" "$home" >/dev/null
@@ -421,7 +425,9 @@ test_bootstrap_smoke() {
   assert_symlink "$home/.agents/skills/paced-explainer"
   assert_contains "$home/.claude/CLAUDE.md" "AUTO-GENERATED-DO-NOT-EDIT"
   assert_contains "$home/.codex/AGENTS.md" "AUTO-GENERATED-DO-NOT-EDIT"
+  assert_contains "$home/.copilot/copilot-instructions.md" "AUTO-GENERATED-DO-NOT-EDIT"
   assert_contains "$TEST_ROOT/bootstrap.out" "bootstrap 완료"
+  assert_contains "$TEST_ROOT/bootstrap.out" "copilot-instructions.md"
 
   if HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/bootstrap.sh" bogus >"$TEST_ROOT/bootstrap.bogus" 2>&1; then
     fail "bootstrap의 알 수 없는 인자가 성공으로 보고되었습니다"
