@@ -50,7 +50,7 @@ ai-tools-config/
 ├── skills/                            # 각 스킬: SKILL.md + agents/codex.yaml (+부속)
 │   ├── inp-analyze-task/
 │   ├── inp-create-pr/
-│   ├── inp-handle-pr/
+│   ├── inp-review-pr/
 │   ├── inp-spec-task/
 │   ├── inp-start-task/                # + scripts/notion_task.py
 │   └── paced-explainer/               # + references/depth-patterns.md

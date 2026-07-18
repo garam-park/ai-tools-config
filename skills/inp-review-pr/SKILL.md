@@ -1,9 +1,9 @@
 ---
-name: inp-handle-pr
-description: Drive an existing Innopam task pull request through review, CI diagnosis, follow-up fixes, verification, and merge-readiness reporting. Use when the user invokes `$inp-handle-pr` or `/inp-handle-pr`, provides an existing Innopam PR, asks to address review comments or failing checks, requests focused or multi-perspective review, or wants the PR prepared for merge. Do not use to open the initial PR; use inp-create-pr when no PR exists.
+name: inp-review-pr
+description: Drive an existing Innopam task pull request through review, CI diagnosis, follow-up fixes, verification, and merge-readiness reporting. Use when the user invokes `$inp-review-pr` or `/inp-review-pr`, provides an existing Innopam PR, asks to address review comments or failing checks, requests focused or multi-perspective review, or wants the PR prepared for merge. Do not use to open the initial PR; use inp-create-pr when no PR exists.
 ---
 
-# Handle PR
+# Review PR
 
 Handle an existing task PR from review through verified follow-up. Finish without merging unless the user explicitly asks to merge.
 
