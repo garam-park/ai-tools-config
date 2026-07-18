@@ -43,6 +43,7 @@ ai-tools-config/
 │   ├── concepts.md                    # 구조·개념, 의도적으로 없는 것들
 │   ├── platform-mapping.md            # 파일 → 도구별 설치 경로 매핑
 │   ├── device-setup.md                # 새 기기 설정, doctor 해석
+│   ├── inp-workflow.md                # Innopam inp-* 스킬 흐름과 경계
 │   ├── extending.md                   # 스킬/타깃/델타 추가 가이드
 │   └── archive/tasks/                 # 완료된 작업 카드 기록 (fork 시 삭제 무관)
 ├── global-instructions/               # common.md + claude.md/codex.md/opencode.md
@@ -124,6 +125,7 @@ skills:
 ## 문서
 
 - [docs/concepts.md](docs/concepts.md) — 스킬·커맨드·에이전트·훅·MCP·플러그인 개념 구분과 이 리포의 채택 여부
+- [docs/inp-workflow.md](docs/inp-workflow.md) — Innopam `inp-*` 스킬의 단계별 흐름, 경계, 종료 지점
 - [docs/platform-mapping.md](docs/platform-mapping.md) — 리포 파일이 도구별로 어디에 설치되는지, 알려진 공백
 - [docs/device-setup.md](docs/device-setup.md) — 새 기기 설정 절차, doctor 출력 해석, 비밀값 주입
 - [docs/extending.md](docs/extending.md) — 새 스킬/도구 타깃/지침 델타 추가 방법
