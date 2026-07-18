@@ -9,7 +9,7 @@ Use this skill to regulate response size, sequence, and depth. Optimize for the 
 
 ## Platforms (Cross-Tool)
 
-원본은 `~/.local/share/skills/paced-explainer/`이며, 아래 도구 경로는 모두 이곳을 가리키는 심볼릭 링크다. 어느 도구에서 호출되든 동작은 동일하다.
+원본은 이 리포의 `skills/paced-explainer/`이며, `install-skills.sh`가 아래 도구 경로에 리포 작업 트리를 직접 가리키는 심볼릭 링크를 만든다. 어느 도구에서 호출되든 동작은 동일하다.
 
 - **Claude Code**: `~/.claude/skills/paced-explainer/`
 - **Codex / GitHub Copilot / OpenCode**: `~/.agents/skills/paced-explainer/`
