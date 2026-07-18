@@ -27,9 +27,11 @@ MANIFEST="$STATE_DIR/install-skills.manifest"
 
 # Claude Code는 전용 개인 경로를 사용한다.
 # Codex, GitHub Copilot, OpenCode는 공통 Agent Skills 경로를 공식 지원한다.
+# Hermes Agent는 ~/.hermes/config.yaml의 skills.external_dirs에
+# 공통 경로를 등록해 같은 링크를 읽는다 (README '동기화되는 도구' 참고).
 TARGETS=(
   "$HOME/.claude/skills"    # Claude Code
-  "$HOME/.agents/skills"    # Codex, GitHub Copilot, OpenCode
+  "$HOME/.agents/skills"    # Codex, GitHub Copilot, OpenCode, Hermes Agent
 )
 
 warn() {
@@ -268,6 +270,7 @@ echo "  - Claude Code: ~/.claude/skills"
 echo "  - Codex: ~/.agents/skills"
 echo "  - GitHub Copilot: ~/.agents/skills"
 echo "  - OpenCode: ~/.agents/skills"
+echo "  - Hermes Agent: ~/.agents/skills (~/.hermes/config.yaml skills.external_dirs 등록 필요)"
 
 if [[ "$failures" -gt 0 ]]; then
   error "${failures}개 항목을 설치하지 못했습니다. 위 경고를 확인하세요."
