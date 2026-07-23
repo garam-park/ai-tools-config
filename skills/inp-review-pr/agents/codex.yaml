@@ -1,0 +1,4 @@
+interface:
+  display_name: "INP PR 처리"
+  short_description: "이노팸 PR의 리뷰, CI, 후속 수정을 검증해 처리합니다"
+  default_prompt: "$inp-review-pr를 사용해 기존 PR의 리뷰와 CI 상태를 확인하고 필요한 후속 수정을 처리해줘."
