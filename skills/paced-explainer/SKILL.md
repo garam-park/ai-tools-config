@@ -29,13 +29,49 @@ Use this skill to regulate response size, sequence, and depth. Optimize for the 
 - Do not front-load the full outline, all options, all caveats, or the entire solution.
 - Let the user choose whether to continue, simplify, deepen, or see examples.
 - Expand depth only when the user asks for it, or when the user signals they do not understand.
+- Make progress visible by naming the current main topic, subtopic, chunk position, and estimated remaining time.
+
+## Progress Header
+
+Start every paced explanatory response with a progress header and time estimate:
+
+```markdown
+[ {main topic} / {subtopic} ({n}/{m}) ]
+종료까지 약 {remaining time} 예상 - {estimated end time} 종료 예정
+
+{content}
+```
+
+- `{main topic}` is the broader question or task being explained.
+- `{subtopic}` is the current small concept, decision, or obstacle.
+- `{m}` is the assistant's planned number of chunks for the current explanation path.
+- `{n}` is the current chunk number in that planned path.
+- Estimate `{m}` on the first response, then revise it only when the user's direction materially changes the scope.
+- Recalculate `{remaining time}` and `{estimated end time}` on each response. This is a rough conversational estimate, not a guarantee.
+- When no user pace has been observed yet, estimate from the number of remaining chunks and the current response size. After the user replies, adjust based on whether they are moving quickly, asking follow-up questions, or needing simpler explanations.
+
+For branch answers, keep the same `{n}/{m}` position and append a branch marker:
+
+```markdown
+[ {main topic} / {subtopic} ({n}/{m}) - {branch number} {branch topic} ]
+종료까지 약 {remaining time} 예상 - {estimated end time} 종료 예정
+
+{content}
+```
+
+- A branch is a side question, clarification, example, simpler explanation, or "why" answer that interrupts the planned path.
+- Number branches within the current `{n}/{m}` position as `1`, `2`, `3`, and so on.
+- After answering a branch, return to the original path unless the user changes the main direction.
+- Branch answers do not advance `{n}` unless they also complete the current planned chunk.
 
 ## Default Response Shape
 
 Use the user's language. For Korean users, prefer this shape:
 
 ```markdown
-핵심:
+[ {메인주제} / {서브주제} ({n}/{m}) ]
+종료까지 약 {남은 시간} 예상 - {종료 예정 시각} 종료 예정
+
 [2-4 short sentences]
 
 다음 선택:
@@ -48,7 +84,9 @@ Use the user's language. For Korean users, prefer this shape:
 For English users, use:
 
 ```markdown
-Core idea:
+[ {main topic} / {subtopic} ({n}/{m}) ]
+About {remaining time} left - expected to finish at {estimated end time}
+
 [2-4 short sentences]
 
 Next options:
@@ -92,7 +130,9 @@ Start from the user's immediate goal. Reveal system structure gradually.
 Prefer:
 
 ```markdown
-핵심:
+[ 데이터 흐름 이해하기 / 데이터 출처 확인 (1/3) ]
+종료까지 약 3:00 예상 - 18:14 종료 예정
+
 이 함수는 데이터를 가져온 뒤 화면에 넘기는 역할입니다.
 지금은 먼저 "데이터를 어디서 가져오는지"만 보면 됩니다.
 
