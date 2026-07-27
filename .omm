@@ -1,0 +1,40 @@
+{
+  "formatVersion": 2,
+  "managedBy": "mcp-script-builder",
+  "providers": {
+    "codex": ".codex/config.toml",
+    "claude": ".mcp.json",
+    "vscode-copilot": ".vscode/mcp.json",
+    "opencode": "opencode.json"
+  },
+  "servers": {
+    "notion": {
+      "transport": "stdio",
+      "launcher": "scripts/mcp/notion/start.sh",
+      "providers": [
+        "codex",
+        "claude",
+        "vscode-copilot",
+        "opencode"
+      ],
+      "ownership": "generated",
+      "artifacts": [
+        {
+          "path": "scripts/mcp/notion/start.sh",
+          "sha256": "3aa905f1d5263ca7a553ba7c5868bf37314e9cf1c07e9d3ce7c711af08abd31f",
+          "role": "launcher"
+        },
+        {
+          "path": "scripts/mcp/notion/.env.example",
+          "sha256": "bb702cafc2a36734cc8d36b4568a8ea3eebede236f1fc1c06b54ad63656bf106",
+          "role": "environment-template"
+        },
+        {
+          "path": "scripts/mcp/notion/.gitignore",
+          "sha256": "529ed90506083c9f12c1946acec9e46e6633bd61f9227fb4d8984fbce33079f0",
+          "role": "secret-ignore-rules"
+        }
+      ]
+    }
+  }
+}
