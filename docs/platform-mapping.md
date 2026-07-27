@@ -6,6 +6,8 @@
 
 Claude Code는 전용 개인 경로를 사용하고, Codex·GitHub Copilot·OpenCode는 세 도구가 모두 공식 지원하는 공통 Agent Skills 경로를 사용한다. 같은 스킬을 여러 탐색 경로에 중복 설치하지 않는다.
 
+스킬 소유권, 글로벌·프로젝트 전용 배포 정책, 설치 상태의 정의는 [skill-management.md](skill-management.md)를 따른다. 현재 설치기는 모든 `skills/*/SKILL.md`를 글로벌 배포 대상으로 간주하므로 프로젝트 전용 스킬 정책은 아직 지원하지 않는다.
+
 | 도구 | 개인 스킬 경로 | 스크립트 소스 | 비고 |
 |------|----------------|---------------|------|
 | Claude Code | `~/.claude/skills/` | `TARGETS[0]` | Claude 전용 경로 |

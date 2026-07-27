@@ -53,6 +53,7 @@ ai-tools-config/
 │   ├── inp-review-pr/
 │   ├── inp-spec-task/
 │   ├── inp-start-task/                # + scripts/notion_task.py
+│   ├── import-global-skill/            # 전역 스킬을 프로젝트 원본으로 안전하게 가져오기
 │   └── paced-explainer/               # + references/depth-patterns.md
 ├── tests/
 │   └── installers_test.sh
