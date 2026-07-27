@@ -1,6 +1,6 @@
 ---
 name: import-global-skill
-description: Import an existing user-level or globally installed Agent Skill into this repository's `skills/` directory as a project-owned skill. Use when the user invokes `$import-global-skill` or `/import-global-skill`, asks to bring, copy, adopt, vendor, or customize a global skill for this project, or wants a global skill made reproducible through this repository.
+description: Import an existing user-level or globally installed Agent Skill into this repository's global-deployment `skills/` catalog. Use only while working in this repository when the user invokes `$import-global-skill` or `/import-global-skill`, asks to bring, copy, adopt, vendor, or customize a global skill, or wants a global skill made reproducible through this project.
 ---
 
 # Import Global Skill
@@ -22,7 +22,7 @@ Resolve `SKILL_DIR` as the directory containing this `SKILL.md`, then run:
 python3 "$SKILL_DIR/scripts/import_global_skill.py" <skill-name> --dry-run
 ```
 
-The script searches, in order, the configured `CODEX_HOME` skill directory when present, `~/.codex/skills`, `~/.agents/skills`, and `~/.claude/skills`. It deduplicates paths that resolve to the same source and rejects sources that resolve inside this project's own `skills/` directory.
+The script searches, in order, the configured `CODEX_HOME` skill directory when present, `~/.codex/skills`, `~/.agents/skills`, and `~/.claude/skills`. It deduplicates paths that resolve to the same source and rejects sources that resolve inside this project's global or project-only skill directories.
 
 If distinct global sources share the same name, inspect the reported paths and use the exact intended one:
 

@@ -150,7 +150,7 @@ def discover_source(
     skill_name: str,
     explicit_source: Path | None,
     global_roots: list[Path],
-    project_skills: Path,
+    project_skill_roots: list[Path],
 ) -> tuple[Path, list[Path]]:
     if explicit_source:
         candidates = [require_skill_directory(explicit_source)]
@@ -161,12 +161,12 @@ def discover_source(
             if candidate.exists() or candidate.is_symlink():
                 candidates.append(require_skill_directory(candidate))
 
-    project_skills_resolved = project_skills.resolve()
+    project_roots_resolved = [root.resolve() for root in project_skill_roots]
     external: list[Path] = []
     seen: set[Path] = set()
     refused_project_paths: list[Path] = []
     for candidate in candidates:
-        if is_within(candidate, project_skills_resolved):
+        if any(is_within(candidate, root) for root in project_roots_resolved):
             refused_project_paths.append(candidate)
             continue
         if candidate not in seen:
@@ -343,6 +343,10 @@ def main() -> int:
 
         project_root = resolve_project_root(args.project_root)
         project_skills = project_root / "skills"
+        project_skill_roots = [
+            project_skills,
+            project_root / ".agents" / "skills",
+        ]
         destination = project_skills / destination_name
         if destination.exists() or destination.is_symlink():
             raise ImportErrorWithHint(
@@ -355,7 +359,7 @@ def main() -> int:
             else default_global_roots()
         )
         source, _ = discover_source(
-            args.skill_name, args.source, roots, project_skills
+            args.skill_name, args.source, roots, project_skill_roots
         )
         source_name = read_frontmatter_name(source / "SKILL.md")
         preflight_source(source)
