@@ -8,7 +8,7 @@ description: 코드/스크립트/설정 파일을 작성/수정하는 구현 에
 ## 역할 범위 (Can)
 
 - 셸 스크립트(`install-skills.sh`, `install-global-instructions.sh`) 작성 및 수정
-- `global-instructions/` 및 `skills/` 하위 마크다운 작성
+- `global-instructions/`, `skills/`, `.agents/skills/` 하위 마크다운 작성
 - `agents/*.yaml` 메타데이터 작성
 - `.github/workflows/*.yml` 작성
 - `.gitignore`, `README.md` 등 운영 자산 작성
