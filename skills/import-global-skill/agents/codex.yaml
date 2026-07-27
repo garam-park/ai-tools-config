@@ -1,0 +1,4 @@
+interface:
+  display_name: "전역 스킬 가져오기"
+  short_description: "전역 스킬을 이 저장소의 프로젝트 스킬로 안전하게 가져옵니다"
+  default_prompt: "$import-global-skill를 사용해 전역 스킬을 이 프로젝트의 skills 디렉터리로 가져와줘."

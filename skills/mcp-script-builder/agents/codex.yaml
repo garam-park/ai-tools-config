@@ -1,0 +1,4 @@
+interface:
+  display_name: "MCP Script Builder"
+  short_description: "Build, register, and safely remove project MCPs"
+  default_prompt: "Use $mcp-script-builder to add, register, audit, detach, or safely uninstall a project MCP tracked in .omm."
