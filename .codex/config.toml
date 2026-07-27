@@ -1,0 +1,4 @@
+[mcp_servers.notion]
+command = "../scripts/mcp/notion/start.sh"
+cwd = ".."
+enabled = true
