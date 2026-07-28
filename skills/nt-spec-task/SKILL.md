@@ -37,8 +37,10 @@ Before doing repository or specification work, check whether a usable Notion acc
 
 1. Inspect repository context only as needed. Read the README, applicable instructions, API documentation, nearby code, and product files when they clarify behavior, constraints, naming, or test expectations.
 2. Separate confirmed requirements from assumptions.
-3. Ask concise questions only when the answer materially changes scope, behavior, data shape, API contract, migration risk, or acceptance criteria.
-4. Continue with explicitly labeled assumptions when an unanswered question is non-blocking.
+3. Identify decisions and ambiguous interpretations before drafting final requirements. Treat product behavior, data shape, API contract, permissions, migration behavior, rollout, acceptance criteria, and repository ownership as decision-bearing when more than one reasonable interpretation exists.
+4. Resolve decision-bearing ambiguity in the same session that invoked the skill. Ask concise questions and wait for the user's answer before proceeding when the answer materially changes scope, behavior, data shape, API contract, migration risk, rollout, repository ownership, or acceptance criteria.
+5. Do not silently choose among materially different interpretations just to keep moving. If the user explicitly delegates the decision, record the chosen assumption and rationale in the draft.
+6. Continue with explicitly labeled assumptions only when an unanswered question is non-blocking and does not materially change implementation or acceptance.
 
 Use this shape unless the task clearly needs another structure:
 
@@ -68,6 +70,7 @@ Check relevant gaps in:
 - backward compatibility and adjacent regression risk
 - manually verifiable acceptance criteria and automated tests
 - configuration, rollout, operations, dependencies, and documentation
+- unresolved decisions or ambiguous interpretations that must be answered in the invoking session before the specification can be treated as implementation-ready
 
 When backend controller behavior changes, include the expected `docs/develop/API-guide/` update. When implementation requires an irreversible architecture, data, infrastructure, dependency, authentication, or policy decision, include an ADR requirement.
 
