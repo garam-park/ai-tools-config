@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "notion": {
+      "type": "local",
+      "command": [
+        "./scripts/mcp/notion/start.sh"
+      ],
+      "cwd": ".",
+      "enabled": true
+    }
+  }
+}

@@ -41,19 +41,25 @@ ai-tools-config/
 ├── install-global-instructions.sh     # 공통+델타 글로벌 지침 조립/doctor
 ├── docs/
 │   ├── concepts.md                    # 구조·개념, 의도적으로 없는 것들
+│   ├── skill-management.md            # 스킬 소유권·배포 정책·상태 모델
 │   ├── platform-mapping.md            # 파일 → 도구별 설치 경로 매핑
 │   ├── device-setup.md                # 새 기기 설정, doctor 해석
 │   ├── inp-workflow.md                # Innopam inp-* 스킬 흐름과 경계
 │   ├── extending.md                   # 스킬/타깃/델타 추가 가이드
 │   └── archive/tasks/                 # 완료된 작업 카드 기록 (fork 시 삭제 무관)
 ├── global-instructions/               # common.md + claude.md/codex.md/opencode.md
-├── skills/                            # 각 스킬: SKILL.md + agents/codex.yaml (+부속)
+├── skills/                            # 글로벌 배포 스킬 원본
 │   ├── inp-analyze-task/
 │   ├── inp-create-pr/
 │   ├── inp-review-pr/
 │   ├── inp-spec-task/
 │   ├── inp-start-task/                # + scripts/notion_task.py
 │   └── paced-explainer/               # + references/depth-patterns.md
+├── .agents/skills/
+│   ├── import-global-skill/            # 이 리포에서만 사용하는 프로젝트 전용 스킬
+│   └── notion-save/                    # 프로젝트 로컬 Notion MCP 기반 저장 스킬
+├── .claude/skills/
+│   └── import-global-skill -> ../../.agents/skills/import-global-skill
 ├── tests/
 │   └── installers_test.sh
 ├── .github/
