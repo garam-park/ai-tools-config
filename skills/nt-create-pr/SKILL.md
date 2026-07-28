@@ -7,6 +7,14 @@ description: Prepare and open a Notion task pull request from a local task branc
 
 Prepare a Notion task branch for review and open or reuse its pull request. Finish without merging.
 
+## Notion access preflight
+
+Before doing repository, branch, or PR work, check whether a usable Notion access path is available.
+
+1. First check for the project-local `notion` MCP server and use it when available.
+2. If the project-local MCP is unavailable, look for another currently available Notion integration or explicit Notion page content provided by the user.
+3. If no Notion access path is available, tell the user first. Continue only when the local branch, commits, and diff are already sufficient to prepare the PR; do not use local repository context as a substitute task source.
+
 ## Resolve the task and repository
 
 1. Accept a task ID, branch name, or current branch as input. Normalize numeric task IDs to `TSK-<number>`.

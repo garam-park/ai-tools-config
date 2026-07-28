@@ -16,6 +16,14 @@ Explain a Notion task from available evidence while keeping the entire workflow 
 - Status property: prefer `상태` when present.
 - Terminal statuses: treat clearly terminal statuses such as `완료`, `PR완료(DEV)`, and `보관됨` as terminal when present.
 
+## Notion access preflight
+
+Before doing repository or task analysis work, check whether a usable Notion access path is available.
+
+1. First check for the project-local `notion` MCP server and use it when available.
+2. If the project-local MCP is unavailable, look for another currently available Notion integration or explicit Notion page content provided by the user.
+3. If no Notion access path is available, tell the user first. Include the exact missing setup and do not continue with local repository context as a substitute task source.
+
 ## Resolve the task
 
 1. Accept a task ID such as `TSK-3477`, a numeric ID, or a Notion URL.

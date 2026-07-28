@@ -7,6 +7,14 @@ description: Drive an existing Notion task pull request through review, CI diagn
 
 Handle an existing task PR from review through verified follow-up. Finish without merging unless the user explicitly asks to merge.
 
+## Notion access preflight
+
+Before doing repository, branch, or PR work, check whether a usable Notion access path is available.
+
+1. First check for the project-local `notion` MCP server and use it when available.
+2. If the project-local MCP is unavailable, look for another currently available Notion integration or explicit Notion page content provided by the user.
+3. If no Notion access path is available, tell the user first. Continue only when the PR, branch, commits, and diff are already sufficient for the requested review work; do not use local repository context as a substitute task source.
+
 ## Resolve the PR
 
 1. Accept a task ID, PR URL, PR number, branch name, or current branch. Normalize numeric task IDs to `TSK-<number>`.

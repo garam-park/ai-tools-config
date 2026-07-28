@@ -17,6 +17,14 @@ Start a task from the configured Notion task data source, prepare a safe impleme
 - In-progress status: `진행 중`
 - Terminal statuses: `완료`, `PR완료(DEV)`, `보관됨`
 
+## Notion access preflight
+
+Before doing repository, branch, or implementation work, check whether a usable Notion access path is available.
+
+1. First check for the project-local `notion` MCP server and use it when available.
+2. If the project-local MCP is unavailable, look for another currently available Notion integration or explicit Notion page content provided by the user.
+3. If no Notion access path is available, tell the user first. Include the exact missing setup and do not continue with local repository context as a substitute task source.
+
 ## Fetch and start the task
 
 1. Parse the task ID. Accept `TSK-3477`, `tsk-3477`, or `3477` and normalize it to `TSK-3477`.

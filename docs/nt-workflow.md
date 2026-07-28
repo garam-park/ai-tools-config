@@ -35,9 +35,9 @@ flowchart LR
 - Notion, 코드, PR에 대한 쓰기 권한은 단계별로 다르게 제한된다.
 - Notion task database 설정은 프로젝트 루트 `.env.tsk`의 `NOTION_DATABASE_ID`, `NOTION_DATA_SOURCE_ID`를 기준으로 한다.
 - `.env.tsk`에 필요한 값이 없으면 기본값을 쓰지 않는다. 확인 가능한 Notion database 또는 task 링크를 사용자에게 받아 값을 확인한 뒤 `.env.tsk`를 생성하거나 업데이트한다.
-- Notion 작업 출처는 먼저 프로젝트 로컬 `notion` MCP로 확인한다.
+- 모든 `nt-*` 스킬은 작업 초반에 Notion 접근 경로를 먼저 확인한다. 프로젝트 로컬 `notion` MCP를 최우선으로 확인하고, 사용할 수 있으면 그 경로로 작업 출처를 읽는다.
 - `notion` MCP를 사용할 수 없으면 다른 Notion 통합이나 사용자가 제공한 Notion 본문처럼 Notion을 읽을 수 있는 경로만 fallback으로 찾는다.
-- Notion 접근 경로가 없으면 로컬 task 파일, 브랜치, PR, 저장소 파일을 작업 출처로 대체하지 않고, 실패 원인과 가능한 대안을 사용자에게 알린다.
+- Notion 접근 경로가 없으면 먼저 사용자에게 실패 원인과 가능한 대안을 알린다. 로컬 task 파일, 브랜치, PR, 저장소 파일을 Notion 작업 출처로 대체하지 않는다.
 
 ## 단계별 선택 기준
 
@@ -103,6 +103,7 @@ flowchart LR
 ## 현재 설계에서 알아둘 점
 
 - `nt-analyze-task`, `nt-spec-task`, `nt-start-task`는 모두 먼저 프로젝트 로컬 `notion` MCP를 확인한다.
+- `nt-create-pr`, `nt-review-pr`도 시작 시 Notion MCP 등 접근 가능 여부를 먼저 확인하고, 사용할 수 없으면 사용자에게 안내한다. 단, 이미 준비된 PR/브랜치/diff만으로 요청한 PR 작업을 처리할 수 있는 경우에만 Notion task metadata 없이 계속할 수 있다.
 - 여기서 fallback은 Notion을 읽기 위한 대체 경로를 뜻한다. Notion이 아닌 로컬 task 파일, 브랜치, PR, 저장소 파일을 작업 출처로 대체하지 않는다.
 - REST 직접 호출 fallback 스크립트는 두지 않는다. Notion 접근이 없으면 `.env.tsk` 설정, 확인 가능한 Notion 링크, Notion 통합/권한 설정을 안내한다.
 - `nt-create-pr`, `nt-review-pr`는 PR 작업 전에 `gh` 설치, 인증, repo 연결 상태를 먼저 확인하고, 실패 지점별 설치·인증·remote 설정 절차를 안내한다.
