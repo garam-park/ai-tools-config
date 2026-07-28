@@ -1,6 +1,6 @@
 ---
 name: inp-spec-task
-description: Refine an Innopam `솔루션 개발팀 작업` item into an implementation-ready specification without creating branches or editing product code. Use when the user invokes `$inp-spec-task` or `/inp-spec-task`, asks to clarify or concretize an Innopam TSK task, draft requirements and acceptance criteria, identify material open questions, or prepare an Innopam task before implementation. Draft first and update Notion or a local task file only after the user approves the specification and destination.
+description: Refine an Innopam `솔루션 개발팀 작업` item into an implementation-ready specification without creating branches or editing product code. Use when the user invokes `$inp-spec-task` or `/inp-spec-task`, asks to clarify or concretize an Innopam TSK task, draft requirements and acceptance criteria, identify material open questions, or prepare an Innopam task before implementation. Draft first and update Notion only after the user approves the specification and destination.
 ---
 
 # Spec Task
@@ -19,11 +19,11 @@ Turn an Innopam task into an actionable implementation specification through evi
 
 ## Resolve the task
 
-1. Accept a TSK ID, numeric ID, Notion URL, local task file, or clearly matching current branch. Normalize numeric IDs to `TSK-<number>`.
-2. Use a currently available Notion integration to fetch exactly one matching page from the configured database. Do not mutate it during discovery.
-3. If Notion is unavailable, continue from local task files and user-provided context. State which source is unavailable before presenting the draft.
-4. Read task properties and meaningful page content, including title, status, priority, tags, assignee, dates, summary, description, links, and checklists.
-5. Search local task directories for the exact ID and title. Read matching files without moving or modifying them.
+1. Accept a TSK ID, numeric ID, or Notion URL. Normalize numeric IDs to `TSK-<number>`.
+2. First check for the project-local `notion` MCP server. Use it when available to fetch exactly one matching page from the configured database. Do not mutate it during discovery.
+3. If the project-local MCP is unavailable, look for another currently available Notion integration or the user's provided Notion page content. Do not use local task files, branch context, PR metadata, or repository files as a substitute for the Notion task source.
+4. If no Notion access path is available, report that the Innopam Notion task could not be retrieved and offer concrete alternatives, such as reconnecting the `notion` MCP, providing the Notion page content, or retrying after credentials are available.
+5. Read task properties and meaningful page content, including title, status, priority, tags, assignee, dates, summary, description, links, and checklists.
 
 ## Make the draft concrete
 
@@ -65,8 +65,8 @@ When backend controller behavior changes, include the expected `docs/develop/API
 
 ## Approve and update
 
-1. Present the draft before writing to Notion or local files.
-2. Ask the user to approve both the specification and the destination: Notion, a named local task file, both, or no write.
+1. Present the draft before writing to Notion.
+2. Ask the user to approve the specification and the Notion update destination, or choose no write.
 3. Use the available Notion integration for approved updates. If it cannot write, provide the final specification and explain the limitation instead of silently choosing another destination.
 4. Preserve user-authored history. Append or replace only the clearly identified specification section.
 

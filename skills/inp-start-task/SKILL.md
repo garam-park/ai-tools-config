@@ -20,10 +20,12 @@ Start a task from the Innopam `솔루션 개발팀 작업` database, prepare a s
 ## Fetch and start the task
 
 1. Parse the task ID. Accept `TSK-3477`, `tsk-3477`, or `3477` and normalize it to `TSK-3477`.
-2. Fetch exactly one matching Notion page with the Notion integration available in the current tool. If no integration is available, run the bundled `scripts/notion_task.py` from this skill directory; never assume a Codex-, Claude-, Copilot-, or OpenCode-specific install path.
-3. Set `상태` to `진행 중` unless the current status is terminal. Explicit invocation of this skill authorizes this status transition, but not changes to other Notion fields.
-4. Read the task properties and meaningful body blocks. Include the title, task ID, status, priority, tags, assignees, due dates, summary, description, and acceptance criteria in the working context.
-5. If no page is found, multiple pages match, or the task does not identify the intended implementation repository, stop and ask one concise question.
+2. First check for the project-local `notion` MCP server. Use it when available to fetch exactly one matching Notion page.
+3. If the project-local MCP is unavailable, look for another currently available Notion integration. If no integration is available, run the bundled `scripts/notion_task.py` from this skill directory; never assume a Codex-, Claude-, Copilot-, or OpenCode-specific install path.
+4. If no Notion access path is available, report that the Innopam Notion task could not be retrieved and offer concrete alternatives, such as reconnecting the `notion` MCP, providing credentials for the bundled script, or retrying after credentials are available. Do not use local task files, branch context, PR metadata, or repository files as a substitute for the Notion task source.
+5. Set `상태` to `진행 중` unless the current status is terminal. Explicit invocation of this skill authorizes this status transition, but not changes to other Notion fields.
+6. Read the task properties and meaningful body blocks. Include the title, task ID, status, priority, tags, assignees, due dates, summary, description, and acceptance criteria in the working context.
+7. If no page is found, multiple pages match, or the task does not identify the intended implementation repository, stop and ask one concise question.
 
 ## Understand the workspace
 
@@ -60,7 +62,6 @@ Start a task from the Innopam `솔루션 개발팀 작업` database, prepare a s
 5. If the branch already exists and is not checked out elsewhere, attach it without `-b`. If it is already checked out in a suitable worktree, continue there after verification.
 6. Stop if the path belongs to a different repository or branch, or if the base branch is missing or appears stale. Never remove a worktree or branch without explicit approval.
 7. Perform implementation edits only inside the selected worktree.
-8. If the workspace already maintains task files under `tasks/backlog`, `tasks/in-progress`, or `tasks/review-ready`, move or create the matching card under `tasks/in-progress` while preserving user-authored content. Do not create a new task-card system.
 
 ## Implement
 

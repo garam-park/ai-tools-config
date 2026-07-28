@@ -12,7 +12,9 @@ Handle an existing task PR from review through verified follow-up. Finish withou
 1. Accept a task ID, PR URL, PR number, branch name, or current branch. Normalize numeric task IDs to `TSK-<number>`.
 2. Read the repository README and inspect local branch state before querying external systems.
 3. Prefer an available GitHub integration for PR metadata, comments, reviews, and checks. Use the non-interactive `gh` CLI when equivalent integration coverage is unavailable.
-4. Confirm that the PR, branch, repository, and task refer to the same work. If no PR exists, stop and direct the user to `inp-create-pr` unless they explicitly requested an end-to-end flow.
+4. When task metadata is needed, first check for the project-local `notion` MCP server. If it is unavailable, look for another currently available Notion integration or the user's provided Notion page content.
+5. If no Notion access path is available, report that task metadata could not be retrieved and continue only when the PR, branch, commits, and diff are already sufficient for the requested review work; do not treat local files, branch context, PR metadata, or repository files as a substitute task source.
+6. Confirm that the PR, branch, repository, and task refer to the same work. If no PR exists, stop and direct the user to `inp-create-pr` unless they explicitly requested an end-to-end flow.
 
 ## Establish the review target
 

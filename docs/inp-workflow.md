@@ -32,16 +32,19 @@ flowchart LR
 - 작업 식별이 애매하면 짧은 확인 질문 한 번으로 좁힌다.
 - 사용자 작업 트리와 관련 없는 변경은 건드리지 않는다.
 - `stash`, `reset`, `rebase`, 브랜치 삭제처럼 파괴적인 Git 동작은 명시 승인 없이 하지 않는다.
-- Notion, 로컬 task 파일, 코드, PR에 대한 쓰기 권한은 단계별로 다르게 제한된다.
+- Notion, 코드, PR에 대한 쓰기 권한은 단계별로 다르게 제한된다.
+- Notion 작업 출처는 먼저 프로젝트 로컬 `notion` MCP로 확인한다.
+- `notion` MCP를 사용할 수 없으면 다른 Notion 통합이나 사용자가 제공한 Notion 본문처럼 Notion을 읽을 수 있는 경로만 fallback으로 찾는다.
+- Notion 접근 경로가 없으면 로컬 task 파일, 브랜치, PR, 저장소 파일을 작업 출처로 대체하지 않고, 실패 원인과 가능한 대안을 사용자에게 알린다.
 
 ## 단계별 선택 기준
 
 | 상황 | 사용할 스킬 | 읽는 대상 | 쓰는 대상 |
 |------|-------------|-----------|-----------|
-| 작업이 무엇을 요구하는지 먼저 알고 싶다 | `inp-analyze-task` | Notion, 로컬 task 파일, 저장소 문맥 | 없음 |
-| 구현 전에 요구사항과 인수 조건을 고정하고 싶다 | `inp-spec-task` | Notion, 로컬 task 파일, 필요한 저장소 문맥 | 승인 전 없음, 승인 후 Notion 또는 로컬 task 파일 |
-| 실제 구현을 시작해야 한다 | `inp-start-task` | Notion, 저장소 README, 규칙 문서 | Notion 상태, 브랜치/워크트리, 경우에 따라 task 카드 |
-| 구현이 끝났고 첫 PR을 열어야 한다 | `inp-create-pr` | 브랜치 상태, diff, 커밋, README, 필요 시 task 문맥 | 커밋, push, PR |
+| 작업이 무엇을 요구하는지 먼저 알고 싶다 | `inp-analyze-task` | Notion, 필요한 저장소 문맥 | 없음 |
+| 구현 전에 요구사항과 인수 조건을 고정하고 싶다 | `inp-spec-task` | Notion, 필요한 저장소 문맥 | 승인 전 없음, 승인 후 Notion |
+| 실제 구현을 시작해야 한다 | `inp-start-task` | Notion, 저장소 README, 규칙 문서 | Notion 상태, 브랜치/워크트리 |
+| 구현이 끝났고 첫 PR을 열어야 한다 | `inp-create-pr` | 브랜치 상태, diff, 커밋, README, 필요 시 Notion task 문맥 | 커밋, push, PR |
 | 이미 열린 PR의 리뷰나 CI를 처리해야 한다 | `inp-review-pr` | PR 메타데이터, 리뷰 스레드, 체크 결과, 로컬 상태 | 후속 커밋, push, PR 업데이트 |
 
 ## 단계별 종료 지점
@@ -62,7 +65,7 @@ flowchart LR
 
 - 목적: 작업을 실제 구현 가능한 작업 상태로 전환한다.
 - 멈추는 지점: Notion 상태가 적절히 반영되고, 안전한 브랜치 또는 워크트리가 준비되어 구현이 시작되면 된다.
-- 특징: 다섯 스킬 중 유일하게 fallback 스크립트 `scripts/notion_task.py`를 포함한다.
+- 특징: 세 Notion 작업 스킬 중 유일하게 REST fallback 스크립트 `scripts/notion_task.py`를 포함한다.
 
 ### `inp-create-pr`
 
@@ -97,7 +100,9 @@ flowchart LR
 
 ## 현재 설계에서 알아둘 점
 
-- Notion fallback은 현재 `inp-start-task`에만 구현돼 있다.
+- `inp-analyze-task`, `inp-spec-task`, `inp-start-task`는 모두 먼저 프로젝트 로컬 `notion` MCP를 확인한다.
+- 여기서 fallback은 Notion을 읽기 위한 대체 경로를 뜻한다. Notion이 아닌 로컬 task 파일, 브랜치, PR, 저장소 파일을 작업 출처로 대체하지 않는다.
+- REST 직접 호출 fallback은 현재 `inp-start-task`에만 구현돼 있다.
 - GitHub Copilot은 이 리포에서 스킬은 받지만 글로벌 지침은 받지 않는다. 도구별 체감 일관성은 다를 수 있다.
 - `skills/<name>/agents/codex.yaml`은 모든 inp 스킬에 존재하지만, 현재 문서 기준으로는 family 전체 무결성 검사가 강하게 걸려 있지 않다.
 

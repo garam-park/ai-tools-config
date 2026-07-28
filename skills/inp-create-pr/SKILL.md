@@ -10,9 +10,10 @@ Prepare an Innopam task branch for review and open or reuse its pull request. Fi
 ## Resolve the task and repository
 
 1. Accept a task ID, branch name, or current branch as input. Normalize numeric task IDs to `TSK-<number>`.
-2. Read the repository README and inspect the current branch, recent commits, and task-related files before using external systems.
-3. Use a connected task system when available, but continue from local and user-provided context when it is unavailable.
-4. Confirm the implementation repository, expected base branch, and change scope. Use `develop` only when repository conventions or existing task branches establish it as the base.
+2. Read the repository README and inspect the current branch and recent commits before using external systems.
+3. When task metadata is needed, first check for the project-local `notion` MCP server. If it is unavailable, look for another currently available Notion integration or the user's provided Notion page content.
+4. If no Notion access path is available, report that task metadata could not be retrieved and continue only when the local branch, commits, and diff are already sufficient to prepare the PR; do not treat local files, branch context, PR metadata, or repository files as a substitute task source.
+5. Confirm the implementation repository, expected base branch, and change scope. Use `develop` only when repository conventions or existing task branches establish it as the base.
 
 ## Validate the branch
 

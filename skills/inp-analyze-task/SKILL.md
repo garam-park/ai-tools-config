@@ -19,21 +19,21 @@ Explain an Innopam task from available evidence while keeping the entire workflo
 
 ## Resolve the task
 
-1. Accept a task ID such as `TSK-3477`, a numeric ID, a Notion URL, a local task file, or an ID clearly present in the current branch name.
+1. Accept a task ID such as `TSK-3477`, a numeric ID, or a Notion URL.
 2. Normalize numeric IDs to `TSK-<number>`.
 3. If more than one task remains plausible, ask one short clarification before querying or analyzing.
-4. Use a currently available Notion integration to fetch the matching page and its content. Query only the configured Innopam database and do not mutate the page.
-5. If Notion is unavailable, continue from local task files, branch context, PR metadata, and user-provided information. State which source could not be retrieved.
+4. First check for the project-local `notion` MCP server. Use it when available to fetch the matching page and its content. Query only the configured Innopam database and do not mutate the page.
+5. If the project-local MCP is unavailable, look for another currently available Notion integration or the user's provided Notion page content. Do not use local task files, branch context, PR metadata, or repository files as a substitute for the Notion task source.
+6. If no Notion access path is available, report that the Innopam Notion task could not be retrieved and offer concrete alternatives, such as reconnecting the `notion` MCP, providing the Notion page content, or retrying after credentials are available.
 
 ## Gather evidence
 
 1. Read task properties and meaningful page content, including title, ID, status, priority, tags, assignee, due date, summary, description, links, and checklists when available.
-2. Search existing local task directories for the exact task ID and title. Treat local files as supporting context, not as authority over the current Notion page.
-3. Inspect repository context only when needed to understand scope:
+2. Inspect repository context only when needed to understand scope after the Notion task has been retrieved:
    - Read the repository README for navigation.
    - Read relevant agent instructions, API documentation, and nearby code only when the task names a module, endpoint, screen, or workflow.
    - Avoid implementation-level exploration when the task can be explained without it.
-4. Separate directly supported facts from assumptions and inferences.
+3. Separate directly supported facts from assumptions and inferences.
 
 ## Produce the analysis
 
@@ -50,7 +50,7 @@ Keep the default response concise and use the user's language. Include only usef
 ## Guardrails
 
 - Do not change Notion status or content.
-- Do not create, edit, move, or delete local task files or product code.
+- Do not create, edit, move, or delete local files or product code.
 - Do not change branches, commits, pull requests, or GitHub comments.
 - Do not invent missing requirements. Label uncertain interpretations as assumptions.
 - If the task is in a terminal status, report it and do not recommend implementation unless the user explicitly wants to resume or perform follow-up work.
