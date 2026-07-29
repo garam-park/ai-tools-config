@@ -16,6 +16,7 @@
 #
 # 사용법:
 #   ./install-global-instructions.sh [install]   # 동기화 (기본)
+#   ./install-global-instructions.sh uninstall   # 자동 생성 글로벌 지침 제거
 #   ./install-global-instructions.sh doctor      # 변경 없이 동기화 상태만 검사 (문제 시 exit 1)
 
 set -euo pipefail
@@ -24,17 +25,17 @@ shopt -s inherit_errexit 2>/dev/null || true   # bash 4.4+: command substitution
 CMD="install"
 case "${1:-}" in
   "") ;;
-  install|doctor)
+  install|uninstall|doctor)
     CMD="$1"
     ;;
   *)
-    echo "사용법: $0 [install|doctor]" >&2
+    echo "사용법: $0 [install|uninstall|doctor]" >&2
     exit 2
     ;;
 esac
 if [[ $# -gt 1 ]]; then
   echo "알 수 없는 인자입니다: $2" >&2
-  echo "사용법: $0 [install|doctor]" >&2
+  echo "사용법: $0 [install|uninstall|doctor]" >&2
   exit 2
 fi
 
@@ -108,13 +109,13 @@ declare -a TARGETS=(
   "$HOME/.copilot/copilot-instructions.md|copilot.md"
 )
 
-if [[ ! -f "$COMMON" ]]; then
-  echo "오류: $COMMON 이 없습니다." >&2
-  exit 1
-fi
-
 # doctor: 아무것도 변경하지 않고 동기화 상태만 검사한다.
 if [[ "$CMD" == "doctor" ]]; then
+  if [[ ! -f "$COMMON" ]]; then
+    echo "오류: $COMMON 이 없습니다." >&2
+    exit 1
+  fi
+
   problems=0
   for entry in "${TARGETS[@]}"; do
     dest="${entry%%|*}"
@@ -158,6 +159,51 @@ if [[ "$CMD" == "doctor" ]]; then
     exit 0
   fi
   echo "doctor: ${problems}개 문제 발견. ./install-global-instructions.sh 를 실행해 동기화하세요."
+  exit 1
+fi
+
+if [[ "$CMD" == "uninstall" ]]; then
+  failures=0
+  for entry in "${TARGETS[@]}"; do
+    dest="${entry%%|*}"
+    write_target="$dest"
+
+    if [[ -L "$dest" ]]; then
+      if resolved="$(resolve_symlink_target "$dest" 2>/dev/null)" && [[ -n "$resolved" ]]; then
+        write_target="$resolved"
+      else
+        echo "note: $dest 는 손상된(dangling) 심볼릭 링크입니다. 삭제할 생성 파일이 없습니다." >&2
+        continue
+      fi
+    fi
+
+    if [[ -f "$write_target" ]]; then
+      if grep -qF "$MARKER" "$write_target"; then
+        if rm -f "$write_target"; then
+          echo "uninstalled: $dest"
+        else
+          echo "warning: 자동 생성 파일을 제거할 수 없습니다: $write_target" >&2
+          failures=$((failures + 1))
+        fi
+      else
+        echo "warning: $dest 는 자동 생성 마커가 없어 삭제하지 않습니다." >&2
+      fi
+    elif [[ -e "$write_target" ]]; then
+      echo "warning: $dest 는 일반 파일이 아니라 삭제하지 않습니다: $write_target" >&2
+    fi
+  done
+
+  echo
+  if [[ "$failures" -gt 0 ]]; then
+    echo "오류: ${failures}개 항목을 삭제하지 못했습니다. 위 경고를 확인하세요." >&2
+    exit 1
+  fi
+  echo "완료. 자동 생성 글로벌 지침을 제거했습니다."
+  exit 0
+fi
+
+if [[ ! -f "$COMMON" ]]; then
+  echo "오류: $COMMON 이 없습니다." >&2
   exit 1
 fi
 

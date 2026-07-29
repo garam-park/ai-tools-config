@@ -88,10 +88,22 @@ run_skills_doctor() {
   HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/install-skills.sh" doctor
 }
 
+run_skills_uninstall() {
+  local fixture="$1"
+  local home="$2"
+  HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/install-skills.sh" uninstall
+}
+
 run_globals_doctor() {
   local fixture="$1"
   local home="$2"
   HOME="$home" bash "$fixture/install-global-instructions.sh" doctor
+}
+
+run_globals_uninstall() {
+  local fixture="$1"
+  local home="$2"
+  HOME="$home" bash "$fixture/install-global-instructions.sh" uninstall
 }
 
 test_first_and_repeated_skill_install() {
@@ -203,6 +215,24 @@ test_stale_user_item_preserved() {
   pass "stale 링크 위치의 사용자 항목 보존"
 }
 
+test_skills_uninstall() {
+  local fixture="$TEST_ROOT/uninstall-skills/source"
+  local home="$TEST_ROOT/uninstall-skills/home"
+  make_skills_fixture "$fixture"
+
+  run_skills "$fixture" "$home" >/dev/null
+  rm -f "$home/.agents/skills/paced-explainer"
+  mkdir -p "$home/.agents/skills/paced-explainer"
+  printf 'mine\n' > "$home/.agents/skills/paced-explainer/LOCAL_ONLY"
+
+  run_skills_uninstall "$fixture" "$home" >"$TEST_ROOT/uninstall-skills.out" 2>&1
+  assert_not_exists "$home/.claude/skills/paced-explainer"
+  assert_file "$home/.agents/skills/paced-explainer/LOCAL_ONLY"
+  assert_not_exists "$home/.state/ai-tools-config/install-skills.manifest"
+  assert_contains "$TEST_ROOT/uninstall-skills.out" "사용자 항목으로 바뀌어"
+  pass "스킬 uninstall: 관리 링크 제거와 사용자 항목 보존"
+}
+
 test_empty_skill_source_errors() {
   local nodir="$TEST_ROOT/nodir/source"
   local empty="$TEST_ROOT/empty/source"
@@ -303,6 +333,31 @@ test_global_symlink_targets() {
   assert_symlink "$dangling_home/.claude/CLAUDE.md"
   assert_contains "$dangling_home/external/new-claude.md" "AUTO-GENERATED-DO-NOT-EDIT"
   pass "정상/끊어진 글로벌 지침 심볼릭 링크 보존"
+}
+
+test_globals_uninstall() {
+  local fixture="$TEST_ROOT/uninstall-globals/source"
+  local home="$TEST_ROOT/uninstall-globals/home"
+  local external="$TEST_ROOT/uninstall-globals/external/claude.md"
+  make_global_fixture "$fixture"
+
+  run_globals "$fixture" "$home" >/dev/null
+  mkdir -p "$(dirname "$external")"
+  printf '외부 지침\n' > "$external"
+  rm "$home/.claude/CLAUDE.md"
+  ln -s "$external" "$home/.claude/CLAUDE.md"
+  run_globals "$fixture" "$home" >/dev/null
+  printf '내 지침\n' > "$home/.codex/AGENTS.md"
+
+  run_globals_uninstall "$fixture" "$home" >"$TEST_ROOT/uninstall-globals.out" 2>&1
+  assert_symlink "$home/.claude/CLAUDE.md"
+  assert_not_exists "$external"
+  assert_file "$home/.codex/AGENTS.md"
+  assert_contains "$home/.codex/AGENTS.md" "내 지침"
+  assert_not_exists "$home/.config/opencode/AGENTS.md"
+  assert_not_exists "$home/.copilot/copilot-instructions.md"
+  assert_contains "$TEST_ROOT/uninstall-globals.out" "자동 생성 마커가 없어"
+  pass "글로벌 지침 uninstall: 자동 생성 파일 제거와 사용자 파일 보존"
 }
 
 test_skills_doctor() {
@@ -433,6 +488,14 @@ test_bootstrap_smoke() {
     fail "bootstrap의 알 수 없는 인자가 성공으로 보고되었습니다"
   fi
   assert_contains "$TEST_ROOT/bootstrap.bogus" "알 수 없는 인자"
+
+  HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/bootstrap.sh" uninstall >"$TEST_ROOT/bootstrap.uninstall" 2>&1
+  assert_not_exists "$home/.claude/skills/paced-explainer"
+  assert_not_exists "$home/.agents/skills/paced-explainer"
+  assert_not_exists "$home/.claude/CLAUDE.md"
+  assert_not_exists "$home/.codex/AGENTS.md"
+  assert_not_exists "$home/.copilot/copilot-instructions.md"
+  assert_contains "$TEST_ROOT/bootstrap.uninstall" "bootstrap uninstall 완료"
   pass "bootstrap: 설치 2종 + doctor 2종 일괄 실행과 인자 검증"
 }
 
@@ -442,11 +505,13 @@ test_wrong_symlink_replacement
 test_stale_manifest_cleanup
 test_legacy_target_cleanup
 test_stale_user_item_preserved
+test_skills_uninstall
 test_empty_skill_source_errors
 test_target_mkdir_error
 test_global_first_repeat_and_backup
 test_marker_position_independent
 test_global_symlink_targets
+test_globals_uninstall
 test_skills_doctor
 test_globals_doctor
 test_bootstrap_smoke

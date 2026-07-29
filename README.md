@@ -30,6 +30,14 @@ cd ~/ai-tools-config
 
 두 doctor 모두 아무것도 변경하지 않으며, 문제가 있으면 종료 코드 1을 반환한다.
 
+설치한 관리 항목을 제거하려면:
+
+```bash
+./bootstrap.sh uninstall
+```
+
+스킬은 리포 원본 또는 manifest가 기록한 원본을 가리키는 심볼릭 링크만 제거한다. 글로벌 지침은 자동 생성 마커가 있는 파일만 제거한다. 사용자 파일·디렉토리나 다른 원본으로 바뀐 항목은 삭제하지 않는다.
+
 ## 구성
 
 ```text
@@ -37,8 +45,8 @@ ai-tools-config/
 ├── README.md
 ├── ARCHITECTURE-REVIEW.md             # 구조 리뷰 보고서 (2026-07)
 ├── bootstrap.sh                       # 설치 2종 + doctor 2종 일괄 실행
-├── install-skills.sh                  # 스킬 심볼릭 링크 설치/doctor
-├── install-global-instructions.sh     # 공통+델타 글로벌 지침 조립/doctor
+├── install-skills.sh                  # 스킬 심볼릭 링크 설치/uninstall/doctor
+├── install-global-instructions.sh     # 공통+델타 글로벌 지침 조립/uninstall/doctor
 ├── docs/
 │   ├── concepts.md                    # 구조·개념, 의도적으로 없는 것들
 │   ├── skill-management.md            # 스킬 소유권·배포 정책·상태 모델
@@ -115,6 +123,7 @@ skills:
 3. 실제 파일·디렉토리와 충돌하면 사용자 항목을 보존하고 경고한다 (`--force` 시 `.bak.<timestamp>` 백업 후 교체).
 4. `${XDG_STATE_HOME:-~/.local/state}/ai-tools-config/install-skills.manifest`에 성공한 관리 링크를 기록한다.
 5. 다음 실행에서 원본이 사라진 관리 링크만 정리한다. 사용자가 바꾼 항목은 보존한다.
+6. `uninstall`은 현재 리포 원본을 가리키는 링크와 manifest에 기록된 관리 링크만 제거한다. 같은 위치가 사용자 항목으로 바뀌었으면 보존한다.
 
 ## 글로벌 지침 동기화
 
@@ -127,6 +136,8 @@ skills:
 | OpenCode | `~/.config/opencode/AGENTS.md` | `common.md` + `opencode.md` |
 
 마커 없는 기존 파일은 `.bak.<timestamp>`로 백업한다. 자동 생성 파일은 백업 없이 갱신한다. 대상이 심볼릭 링크면 링크 자체를 보존하고 실제 타깃을 백업·갱신한다 (순환 링크 탐지 포함, 최대 40 depth). dangling 심링크는 dest 위치에 직접 쓴다. 임시 파일은 대상과 같은 디렉토리에 만든 뒤 원자적으로 교체한다.
+
+`uninstall`은 `AUTO-GENERATED-DO-NOT-EDIT` 마커가 있는 글로벌 지침 파일만 삭제한다. 대상이 심볼릭 링크면 링크 자체는 보존하고, 해석된 타깃 파일이 자동 생성 파일일 때만 제거한다.
 
 ## 문서
 
