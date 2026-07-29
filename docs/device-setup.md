@@ -61,13 +61,22 @@ cd ~/ai-tools-config
 
 이전 구조(`~/.local/share/skills/` 중간 사본)에서 마이그레이션하려면 리포 루트에서 `./install-skills.sh`를 한 번 실행한다. 기존 심볼릭 링크가 리포 경로로 교체된다. 로컬 전용 스킬이 없다면 `~/.local/share/skills/`는 제거해도 된다.
 
-## 비밀값: NOTION_TOKEN
+## Notion task 설정: .env.tsk와 NOTION_TOKEN
 
-`inp-start-task` 스킬의 `scripts/notion_task.py`는 Notion API 토큰을 `NOTION_TOKEN` 환경변수(또는 `--config` 파일)에서 읽는다. 토큰 값은 **절대 리포에 커밋하지 않는다** — 기기별로 셸 프로필 등에서 주입한다:
+`nt-*` 스킬은 프로젝트 루트 `.env.tsk`에서 task database 설정을 읽는다. `.env.tsk`는 로컬 전용 파일이며 커밋하지 않는다:
+
+```bash
+NOTION_DATABASE_ID="..."
+NOTION_DATA_SOURCE_ID="..."
+```
+
+값이 없으면 스킬 실행 중 확인 가능한 Notion database 또는 task 링크를 받아 사용 가능한 Notion 통합으로 값을 확인하고 `.env.tsk`를 생성하거나 업데이트한다. 기본 database ID fallback은 두지 않는다.
+
+Notion API 토큰은 사용하는 Notion 통합이 요구하는 방식으로 주입한다. 로컬 REST/API 도구를 쓸 경우 `NOTION_TOKEN` 같은 환경변수를 사용할 수 있지만, 토큰 값은 **절대 리포에 커밋하지 않는다** — 기기별로 셸 프로필 등에서 주입한다:
 
 ```bash
 # 예: ~/.zshrc (리포 밖, 커밋되지 않는 파일)
 export NOTION_TOKEN="..."
 ```
 
-`.gitignore`가 `.env`, `.env.local`, `*.local`을 차단하지만, 안전망일 뿐 비밀값 파일을 리포 안에 두지 않는 것이 원칙이다.
+`.gitignore`가 `.env`, `.env.tsk`, `.env.local`, `*.local`을 차단하지만, 안전망일 뿐 비밀값 파일을 리포 안에 두지 않는 것이 원칙이다.
