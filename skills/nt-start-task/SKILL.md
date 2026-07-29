@@ -1,31 +1,32 @@
 ---
-name: inp-start-task
-description: Start an Innopam Notion work item by TSK ID, move it to in progress, prepare a feature branch, and implement it in the target repository. Use when the user invokes `$inp-start-task`, asks to start or implement an Innopam task such as `TSK-3477`, or asks to begin the task in a separate git worktree.
+name: nt-start-task
+description: Start a Notion TSK task, move it to in progress, prepare a feature branch, and implement it in the target repository. Use when the user invokes `$nt-start-task`, asks to start or implement a TSK task such as `TSK-3477`, or asks to begin the task in a separate git worktree.
 ---
 
 # Start Task
 
-Start a task from the Innopam `솔루션 개발팀 작업` database, prepare a safe implementation branch, and proceed when the task is actionable. Use the standard branch workflow unless the user explicitly requests a worktree.
+Start a task from the configured Notion task data source, prepare a safe implementation branch, and proceed when the task is actionable. Use the standard branch workflow unless the user explicitly requests a worktree.
 
 ## Task source
 
-- Database: `솔루션 개발팀 작업`
-- Database ID: `71842431-f19c-4f43-9df7-461805cf3895`
-- Data source ID, when required by the active Notion integration: `42e60fb3-5260-429b-8af4-ed28535f295b`
-- Task ID property: `작업 ID` (`unique_id`, prefix `TSK`)
-- Status property: `상태`
+- Config file: project-root `.env.tsk`
+- Required keys: `NOTION_DATABASE_ID`, `NOTION_DATA_SOURCE_ID`
+- No built-in database defaults are allowed. If either key is missing, ask the user for a Notion database or task link that the active Notion integration can inspect, then use that link to determine and persist the missing values in `.env.tsk`.
+- Task ID property: prefer `작업 ID` (`unique_id`, prefix `TSK`) when present; otherwise identify the matching ID/title property from the database schema and ask if ambiguous.
+- Status property: prefer `상태` when present.
 - In-progress status: `진행 중`
 - Terminal statuses: `완료`, `PR완료(DEV)`, `보관됨`
 
 ## Fetch and start the task
 
 1. Parse the task ID. Accept `TSK-3477`, `tsk-3477`, or `3477` and normalize it to `TSK-3477`.
-2. First check for the project-local `notion` MCP server. Use it when available to fetch exactly one matching Notion page.
-3. If the project-local MCP is unavailable, look for another currently available Notion integration. If no integration is available, run the bundled `scripts/notion_task.py` from this skill directory; never assume a Codex-, Claude-, Copilot-, or OpenCode-specific install path.
-4. If no Notion access path is available, report that the Innopam Notion task could not be retrieved and offer concrete alternatives, such as reconnecting the `notion` MCP, providing credentials for the bundled script, or retrying after credentials are available. Do not use local task files, branch context, PR metadata, or repository files as a substitute for the Notion task source.
-5. Set `상태` to `진행 중` unless the current status is terminal. Explicit invocation of this skill authorizes this status transition, but not changes to other Notion fields.
-6. Read the task properties and meaningful body blocks. Include the title, task ID, status, priority, tags, assignees, due dates, summary, description, and acceptance criteria in the working context.
-7. If no page is found, multiple pages match, or the task does not identify the intended implementation repository, stop and ask one concise question.
+2. Read project-root `.env.tsk`. If `NOTION_DATABASE_ID` or `NOTION_DATA_SOURCE_ID` is missing, ask for a Notion database or task link, use the available Notion integration to determine the missing IDs, and create or update `.env.tsk`. Do not use hardcoded fallback IDs.
+3. First check for the project-local `notion` MCP server. Use it when available to fetch exactly one matching Notion page from the configured data source.
+4. If the project-local MCP is unavailable, look for another currently available Notion integration or the user's provided Notion page content.
+5. If no Notion access path is available, report that the Notion task could not be retrieved and provide the exact missing setup: `.env.tsk` keys, a usable Notion link, `NOTION_TOKEN`, or Notion integration access. Do not use local task files, branch context, PR metadata, or repository files as a substitute for the Notion task source.
+6. Set `상태` to `진행 중` unless the current status is terminal. Explicit invocation of this skill authorizes this status transition, but not changes to other Notion fields.
+7. Read the task properties and meaningful body blocks. Include the title, task ID, status, priority, tags, assignees, due dates, summary, description, and acceptance criteria in the working context.
+8. If no page is found, multiple pages match, or the task does not identify the intended implementation repository, stop and ask one concise question.
 
 ## Understand the workspace
 
@@ -70,14 +71,13 @@ Start a task from the Innopam `솔루션 개발팀 작업` database, prepare a s
 3. Validate changes in proportion to their risk and follow repository-specific test instructions.
 4. Ask a concise clarification only when implementation cannot proceed safely.
 
-## Bundled script
+## Notion access failure
 
-Resolve `SKILL_DIR` as the directory containing this `SKILL.md`, then run:
+Do not use a bundled REST fallback script. If no Notion integration can inspect the task or database link, stop with concrete setup guidance:
 
-```bash
-python3 "$SKILL_DIR/scripts/notion_task.py" TSK-3477 --start
-```
+- which `.env.tsk` keys are missing
+- what Notion database or task link is needed
+- which Notion integration or credential needs to be connected
+- whether the user can paste the task page content as a temporary read-only fallback
 
-The script reads `NOTION_TOKEN` from the environment. An explicit `--config <path>` may be used for an existing local config file; do not search unrelated tool configuration directories. The script emits sanitized JSON and never prints the token.
-
-If network access is restricted, request the permission required for this exact command. If `updated_status` is false because the task is terminal, do not override the status unless the user explicitly asks.
+If the task is terminal, do not override the status unless the user explicitly asks.

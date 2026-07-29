@@ -1,29 +1,29 @@
 ---
-name: inp-spec-task
-description: Refine an Innopam `솔루션 개발팀 작업` item into an implementation-ready specification without creating branches or editing product code. Use when the user invokes `$inp-spec-task` or `/inp-spec-task`, asks to clarify or concretize an Innopam TSK task, draft requirements and acceptance criteria, identify material open questions, or prepare an Innopam task before implementation. Draft first and update Notion only after the user approves the specification and destination.
+name: nt-spec-task
+description: Refine a Notion TSK task into an implementation-ready specification without creating branches or editing product code. Use when the user invokes `$nt-spec-task` or `/nt-spec-task`, asks to clarify or concretize a TSK task, draft requirements and acceptance criteria, identify material open questions, or prepare a Notion task before implementation. Draft first and update Notion only after the user approves the specification and destination.
 ---
 
 # Spec Task
 
-Turn an Innopam task into an actionable implementation specification through evidence gathering and focused clarification.
+Turn a Notion task into an actionable implementation specification through evidence gathering and focused clarification.
 
 ## Task source
 
-- Workspace: `(주)이노팸`
-- Database: `솔루션 개발팀 작업`
-- Database ID: `71842431-f19c-4f43-9df7-461805cf3895`
-- Data source ID, when supported: `42e60fb3-5260-429b-8af4-ed28535f295b`
-- Task ID property: `작업 ID` with prefix `TSK`
-- Status property: `상태`
-- Terminal statuses: `완료`, `PR완료(DEV)`, `보관됨`
+- Config file: project-root `.env.tsk`
+- Required keys: `NOTION_DATABASE_ID`, `NOTION_DATA_SOURCE_ID`
+- No built-in database defaults are allowed. If either key is missing, ask the user for a Notion database or task link that the active Notion integration can inspect, then use that link to determine and persist the missing values in `.env.tsk`.
+- Task ID property: prefer `작업 ID` with prefix `TSK` when present; otherwise identify the matching ID/title property from the database schema and ask if ambiguous.
+- Status property: prefer `상태` when present.
+- Terminal statuses: treat clearly terminal statuses such as `완료`, `PR완료(DEV)`, and `보관됨` as terminal when present.
 
 ## Resolve the task
 
 1. Accept a TSK ID, numeric ID, or Notion URL. Normalize numeric IDs to `TSK-<number>`.
-2. First check for the project-local `notion` MCP server. Use it when available to fetch exactly one matching page from the configured database. Do not mutate it during discovery.
-3. If the project-local MCP is unavailable, look for another currently available Notion integration or the user's provided Notion page content. Do not use local task files, branch context, PR metadata, or repository files as a substitute for the Notion task source.
-4. If no Notion access path is available, report that the Innopam Notion task could not be retrieved and offer concrete alternatives, such as reconnecting the `notion` MCP, providing the Notion page content, or retrying after credentials are available.
-5. Read task properties and meaningful page content, including title, status, priority, tags, assignee, dates, summary, description, links, and checklists.
+2. Read project-root `.env.tsk`. If `NOTION_DATABASE_ID` or `NOTION_DATA_SOURCE_ID` is missing, ask for a Notion database or task link, retrieve the IDs through the available Notion integration, and create or update `.env.tsk`. Do not use hardcoded fallback IDs.
+3. First check for the project-local `notion` MCP server. Use it when available to fetch exactly one matching page from the configured data source. Do not mutate it during discovery.
+4. If the project-local MCP is unavailable, look for another currently available Notion integration or the user's provided Notion page content. Do not use local task files, branch context, PR metadata, or repository files as a substitute for the Notion task source.
+5. If no Notion access path is available, report that the Notion task could not be retrieved and provide the exact missing setup: `.env.tsk` keys, required Notion link, or Notion integration/credential access.
+6. Read task properties and meaningful page content, including title, status, priority, tags, assignee, dates, summary, description, links, and checklists.
 
 ## Make the draft concrete
 

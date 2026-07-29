@@ -18,7 +18,7 @@
 | 영역 | 현재 파일/폴더 | 적용 상태 | 문제점 | 개선 방향 (→ 수행 결과) |
 |---|---|---|---|---|
 | 공통 지침 | `global-instructions/` (common+델타 3종) | 양호 — 설치 시 3개 도구 경로로 렌더 | Copilot만 글로벌 지침 미수신 (공백) | 공백을 [docs/platform-mapping.md](docs/platform-mapping.md)에 명시, 검증된 경로 확인은 후속 작업 |
-| 스킬 | `skills/` 6종 (`inp-*` 5 + `paced-explainer`) | 양호 — 중립 SKILL.md + Codex 메타 | `paced-explainer/SKILL.md`에 구경로(`~/.local/share/skills/`) 서술 잔존 | 리포 직결 심링크 모델로 서술 수정 (완료) |
+| 스킬 | `skills/` 6종 (`nt-*` 5 + `paced-explainer`) | 양호 — 중립 SKILL.md + Codex 메타 | `paced-explainer/SKILL.md`에 구경로(`~/.local/share/skills/`) 서술 잔존 | 리포 직결 심링크 모델로 서술 수정 (완료) |
 | 커맨드 | 없음 (스킬 트리거 + `codex.yaml` `default_prompt`로 대체) | 의도적 부재 | 부재 사유 미문서화 | [docs/concepts.md](docs/concepts.md)에 도입 기준 기록 (완료) |
 | 에이전트 | `.github/agents/` 4종 (Copilot 역할 규약) | 양호 | Claude 서브에이전트와 개념 혼동 여지 | concepts.md에서 구분 설명 (완료) |
 | MCP | 없음 (Notion은 REST 직접 호출 fallback) | 의도적 부재 | 부재 사유 미문서화 | concepts.md에 도입 기준 기록 (완료) |

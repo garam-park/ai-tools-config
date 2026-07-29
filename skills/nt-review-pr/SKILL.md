@@ -1,6 +1,6 @@
 ---
-name: inp-review-pr
-description: Drive an existing Innopam task pull request through review, CI diagnosis, follow-up fixes, verification, and merge-readiness reporting. Use when the user invokes `$inp-review-pr` or `/inp-review-pr`, provides an existing Innopam PR, asks to address review comments or failing checks, requests focused or multi-perspective review, or wants the PR prepared for merge. Do not use to open the initial PR; use inp-create-pr when no PR exists.
+name: nt-review-pr
+description: Drive an existing Notion task pull request through review, CI diagnosis, follow-up fixes, verification, and merge-readiness reporting. Use when the user invokes `$nt-review-pr` or `/nt-review-pr`, provides an existing task PR, asks to address review comments or failing checks, requests focused or multi-perspective review, or wants the PR prepared for merge. Do not use to open the initial PR; use nt-create-pr when no PR exists.
 ---
 
 # Review PR
@@ -14,7 +14,27 @@ Handle an existing task PR from review through verified follow-up. Finish withou
 3. Prefer an available GitHub integration for PR metadata, comments, reviews, and checks. Use the non-interactive `gh` CLI when equivalent integration coverage is unavailable.
 4. When task metadata is needed, first check for the project-local `notion` MCP server. If it is unavailable, look for another currently available Notion integration or the user's provided Notion page content.
 5. If no Notion access path is available, report that task metadata could not be retrieved and continue only when the PR, branch, commits, and diff are already sufficient for the requested review work; do not treat local files, branch context, PR metadata, or repository files as a substitute task source.
-6. Confirm that the PR, branch, repository, and task refer to the same work. If no PR exists, stop and direct the user to `inp-create-pr` unless they explicitly requested an end-to-end flow.
+6. Confirm that the PR, branch, repository, and task refer to the same work. If no PR exists, stop and direct the user to `nt-create-pr` unless they explicitly requested an end-to-end flow.
+
+## GitHub preflight
+
+Before PR metadata, review thread, checks, or comment work, verify that `gh` can be used from the target repository:
+
+```bash
+command -v gh
+gh auth status
+git remote -v
+gh repo view
+```
+
+If `gh` works, use it for PR lookup, diffs, checks, comments, and metadata unless a richer GitHub integration is already available. If `gh` is missing or not authenticated, explain the exact current failure and guide the user through setup in detail:
+
+- Install: `brew install gh` on macOS, or choose the official GitHub CLI package for the OS.
+- Authenticate: run `gh auth login`, select `GitHub.com`, choose HTTPS or SSH to match the repository, authenticate in the browser or with the shown device code, and grant repo access when prompted.
+- Verify: run `gh auth status` and `gh repo view` in the target repository.
+- Repository issues: if `gh repo view` fails, inspect `git remote -v`, explain the expected `OWNER/REPO`, and guide the user to set or fix `origin` before continuing.
+
+Only fall back to another GitHub integration or user-provided PR URL after this preflight is understood. If no path can inspect the PR, stop with the setup steps still needed rather than guessing.
 
 ## Establish the review target
 

@@ -3,6 +3,7 @@
 개인용 AI 코딩 도구 설정 묶음. Claude Code, GitHub Copilot, Codex, OpenCode, Hermes Agent에서 공통 스킬을 사용하고, 도구별 글로벌 지침을 안전하게 동기화한다.
 
 ## 빠른 시작
+
 > 전제: macOS 또는 Linux 같은 Unix 환경이 필요하다. Windows에서는 WSL을 권장하며, Git Bash를 쓸 경우에도 `ln -s`가 실제 심볼릭 링크를 만들 수 있어야 한다. `bash`가 설치되어 있어야 한다.
 
 ```bash
@@ -52,16 +53,16 @@ ai-tools-config/
 │   ├── skill-management.md            # 스킬 소유권·배포 정책·상태 모델
 │   ├── platform-mapping.md            # 파일 → 도구별 설치 경로 매핑
 │   ├── device-setup.md                # 새 기기 설정, doctor 해석
-│   ├── inp-workflow.md                # Innopam inp-* 스킬 흐름과 경계
+│   ├── nt-workflow.md                 # Notion nt-* 스킬 흐름과 경계
 │   ├── extending.md                   # 스킬/타깃/델타 추가 가이드
 │   └── archive/tasks/                 # 완료된 작업 카드 기록 (fork 시 삭제 무관)
 ├── global-instructions/               # common.md + claude.md/codex.md/opencode.md
 ├── skills/                            # 글로벌 배포 스킬 원본
-│   ├── inp-analyze-task/
-│   ├── inp-create-pr/
-│   ├── inp-review-pr/
-│   ├── inp-spec-task/
-│   ├── inp-start-task/                # + scripts/notion_task.py
+│   ├── nt-analyze-task/
+│   ├── nt-create-pr/
+│   ├── nt-review-pr/
+│   ├── nt-spec-task/
+│   ├── nt-start-task/
 │   └── paced-explainer/               # + references/depth-patterns.md
 ├── .agents/skills/
 │   ├── import-global-skill/            # 이 리포에서만 사용하는 프로젝트 전용 스킬
@@ -78,7 +79,7 @@ ai-tools-config/
 └── .gitignore
 ```
 
-`inp-` 접두사는 Innopam 전용 작업·PR 워크플로를 뜻한다. 범용 스킬과 이름이 충돌하지 않도록 이노팸의 `TSK-*` 작업을 다루는 스킬에만 사용한다.
+`nt-` 접두사는 Notion 전용 작업·PR 워크플로를 뜻한다. 범용 스킬과 이름이 충돌하지 않도록 Notion의 `TSK-*` 작업을 다루는 스킬에만 사용한다.
 
 심볼릭 링크가 리포 작업 트리를 직접 가리키므로 `git pull`만 하면 스킬 내용이 즉시 반영된다. 설치기 재실행은 스킬을 추가·삭제했을 때만 필요하다.
 
@@ -142,7 +143,7 @@ skills:
 ## 문서
 
 - [docs/concepts.md](docs/concepts.md) — 스킬·커맨드·에이전트·훅·MCP·플러그인 개념 구분과 이 리포의 채택 여부
-- [docs/inp-workflow.md](docs/inp-workflow.md) — Innopam `inp-*` 스킬의 단계별 흐름, 경계, 종료 지점
+- [docs/nt-workflow.md](docs/nt-workflow.md) — Notion `nt-*` 스킬의 단계별 흐름, 경계, 종료 지점
 - [docs/platform-mapping.md](docs/platform-mapping.md) — 리포 파일이 도구별로 어디에 설치되는지, 알려진 공백
 - [docs/device-setup.md](docs/device-setup.md) — 새 기기 설정 절차, doctor 출력 해석, 비밀값 주입
 - [docs/extending.md](docs/extending.md) — 새 스킬/도구 타깃/지침 델타 추가 방법

@@ -1,11 +1,11 @@
 ---
-name: inp-create-pr
-description: Prepare and open an Innopam task pull request from a local task branch. Use when the user invokes `$inp-create-pr` or `/inp-create-pr`, or asks to validate an Innopam task branch, push its commits, open or update its initial PR, write the PR body, or document merge criteria. Stop after the PR is ready for review. Do not use for review comments, failing checks, or follow-up fixes on an already-open PR; use inp-review-pr for those.
+name: nt-create-pr
+description: Prepare and open a Notion task pull request from a local task branch. Use when the user invokes `$nt-create-pr` or `/nt-create-pr`, or asks to validate a TSK task branch, push its commits, open or update its initial PR, write the PR body, or document merge criteria. Stop after the PR is ready for review. Do not use for review comments, failing checks, or follow-up fixes on an already-open PR; use nt-review-pr for those.
 ---
 
 # Create PR
 
-Prepare an Innopam task branch for review and open or reuse its pull request. Finish without merging.
+Prepare a Notion task branch for review and open or reuse its pull request. Finish without merging.
 
 ## Resolve the task and repository
 
@@ -14,6 +14,26 @@ Prepare an Innopam task branch for review and open or reuse its pull request. Fi
 3. When task metadata is needed, first check for the project-local `notion` MCP server. If it is unavailable, look for another currently available Notion integration or the user's provided Notion page content.
 4. If no Notion access path is available, report that task metadata could not be retrieved and continue only when the local branch, commits, and diff are already sufficient to prepare the PR; do not treat local files, branch context, PR metadata, or repository files as a substitute task source.
 5. Confirm the implementation repository, expected base branch, and change scope. Use `develop` only when repository conventions or existing task branches establish it as the base.
+
+## GitHub preflight
+
+Before PR metadata, push, or PR creation work, verify that `gh` can be used from the target repository:
+
+```bash
+command -v gh
+gh auth status
+git remote -v
+gh repo view
+```
+
+If `gh` works, use it for PR lookup, creation, checks, comments, and metadata unless a richer GitHub integration is already available. If `gh` is missing or not authenticated, explain the exact current failure and guide the user through setup in detail:
+
+- Install: `brew install gh` on macOS, or choose the official GitHub CLI package for the OS.
+- Authenticate: run `gh auth login`, select `GitHub.com`, choose HTTPS or SSH to match the repository, authenticate in the browser or with the shown device code, and grant repo access when prompted.
+- Verify: run `gh auth status` and `gh repo view` in the target repository.
+- Repository issues: if `gh repo view` fails, inspect `git remote -v`, explain the expected `OWNER/REPO`, and guide the user to set or fix `origin` before continuing.
+
+Only fall back to another GitHub integration or user-provided PR URL after this preflight is understood. If no path can create or inspect the PR, stop with the setup steps still needed rather than guessing.
 
 ## Validate the branch
 
@@ -36,7 +56,7 @@ Do not stash, reset, rebase, delete branches, or overwrite user work without exp
 1. Prefer an available GitHub integration for PR metadata and creation. Use the non-interactive `gh` CLI when no equivalent integration is available.
 2. Detect an existing PR for the branch before creating one.
 3. Create a PR against the confirmed base when none exists. Include the task ID, behavior change, verification, documentation, and residual risk.
-4. If the same task PR already exists, update missing initial details only when clearly safe, then stop and direct follow-up work to `inp-review-pr`.
+4. If the same task PR already exists, update missing initial details only when clearly safe, then stop and direct follow-up work to `nt-review-pr`.
 
 ## Document merge criteria
 
@@ -56,4 +76,4 @@ Do not merge the PR. Report:
 - verification performed
 - merge-criteria status and whether it was independently drafted
 - residual risk
-- the next action, normally `inp-review-pr <task-id>`
+- the next action, normally `nt-review-pr <task-id>`
