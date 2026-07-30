@@ -14,6 +14,7 @@
 #
 # 사용법:
 #   ./install-skills.sh [install] [--force]   # 설치/동기화 (기본)
+#   ./install-skills.sh uninstall             # 관리 중인 스킬 링크 제거
 #   ./install-skills.sh doctor                # 변경 없이 설치 상태만 검사 (문제 시 exit 1)
 
 set -euo pipefail
@@ -53,12 +54,12 @@ is_known_target() {
 }
 
 usage() {
-  echo "사용법: $0 [install [--force] | doctor]" >&2
+  echo "사용법: $0 [install [--force] | uninstall | doctor]" >&2
 }
 
 CMD="install"
 case "${1:-}" in
-  install|doctor)
+  install|uninstall|doctor)
     CMD="$1"
     shift
     ;;
@@ -72,6 +73,12 @@ fi
 
 if [[ $# -gt 0 ]]; then
   error "알 수 없는 인자입니다: $1"
+  usage
+  exit 2
+fi
+
+if [[ "$CMD" != "install" && "$FORCE" == "1" ]]; then
+  error "--force는 install에서만 사용할 수 있습니다."
   usage
   exit 2
 fi
@@ -167,6 +174,61 @@ if [[ "$CMD" == "doctor" ]]; then
   fi
   echo "doctor: ${problem_count}개 문제 발견. ./install-skills.sh 를 실행해 동기화하세요."
   exit 1
+fi
+
+uninstall_link() {
+  local target="$1"
+  local name="$2"
+  local source="$3"
+  local link="$target/$name"
+
+  if [[ -L "$link" && "$(readlink "$link")" == "$source" ]]; then
+    if rm -f "$link"; then
+      echo "uninstalled: $link"
+      return 0
+    fi
+    warn "관리 링크를 제거할 수 없습니다: $link"
+    return 1
+  fi
+
+  if [[ -e "$link" || -L "$link" ]]; then
+    warn "$link 이(가) 사용자 항목으로 바뀌어 삭제하지 않습니다."
+  fi
+  return 0
+}
+
+if [[ "$CMD" == "uninstall" ]]; then
+  failures=0
+
+  for target in "${TARGETS[@]}"; do
+    for skill_dir in "${skill_dirs[@]}"; do
+      name="$(basename "$skill_dir")"
+      if ! uninstall_link "$target" "$name" "$skill_dir"; then
+        failures=$((failures + 1))
+      fi
+    done
+  done
+
+  if [[ -f "$MANIFEST" ]]; then
+    while IFS=$'\t' read -r old_target old_name old_source extra; do
+      [[ -n "$old_target" && -n "$old_name" && -n "$old_source" && -z "${extra:-}" ]] || continue
+      if ! uninstall_link "$old_target" "$old_name" "$old_source"; then
+        failures=$((failures + 1))
+      fi
+    done < "$MANIFEST"
+  fi
+
+  if [[ "$failures" -eq 0 ]]; then
+    rm -f "$MANIFEST"
+  fi
+
+  echo
+  if [[ "$failures" -gt 0 ]]; then
+    error "${failures}개 항목을 삭제하지 못했습니다. 위 경고를 확인하세요."
+    exit 1
+  fi
+  echo "완료. 관리 중인 스킬 링크를 제거했습니다."
+  exit 0
 fi
 
 for target in "${TARGETS[@]}"; do

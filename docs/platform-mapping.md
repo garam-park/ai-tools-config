@@ -4,22 +4,38 @@
 
 ## 스킬
 
-Claude Code는 전용 개인 경로를 사용하고, Codex·GitHub Copilot·OpenCode는 세 도구가 모두 공식 지원하는 공통 Agent Skills 경로를 사용한다. 같은 스킬을 여러 탐색 경로에 중복 설치하지 않는다.
+글로벌 배포 스킬과 프로젝트 전용 스킬은 서로 다른 경로를 사용한다. 같은 스킬의 내용을 여러 위치에 복사하지 않고 원본 하나와 필요한 심볼릭 링크만 관리한다.
 
-| 도구 | 개인 스킬 경로 | 스크립트 소스 | 비고 |
-|------|----------------|---------------|------|
-| Claude Code | `~/.claude/skills/` | `TARGETS[0]` | Claude 전용 경로 |
-| Codex | `~/.agents/skills/` | `TARGETS[1]` | 공통 Agent Skills 경로 |
-| GitHub Copilot | `~/.agents/skills/` | `TARGETS[1]` | 공통 Agent Skills 경로 |
-| OpenCode | `~/.agents/skills/` | `TARGETS[1]` | 공통 Agent Skills 경로 |
+스킬 소유권, 글로벌·프로젝트 전용 배포 정책, 배포 상태의 정의는 [skill-management.md](skill-management.md)를 따른다.
+
+| 도구 | 글로벌 배포 경로 | 프로젝트 전용 경로 | 비고 |
+|------|------------------|--------------------|------|
+| Claude Code | `~/.claude/skills/` | `.claude/skills/` | 프로젝트 전용 원본을 가리키는 상대 링크 사용 |
+| Codex | `~/.agents/skills/` | `.agents/skills/` | 프로젝트 전용 원본 위치 |
+| GitHub Copilot | `~/.agents/skills/` | `.agents/skills/` | 공통 Agent Skills 경로 직접 사용 |
+| OpenCode | `~/.agents/skills/` | `.agents/skills/` | 공통 Agent Skills 경로 직접 사용 |
+| Hermes Agent | 설정된 `external_dirs` | 자동 탐색 없음 | 엄밀한 프로젝트 전용 지원에는 리포 전용 설정 필요 |
+
+### 프로젝트 전용 스킬
+
+프로젝트 전용 스킬은 `.agents/skills/<name>/`에 원본을 둔다. Claude Code 호환을 위해서만 다음 상대 심볼릭 링크를 커밋한다.
+
+```text
+.claude/skills/<name> -> ../../.agents/skills/<name>
+```
+
+Git은 이 링크를 모드 `120000`으로 추적하므로 링크도 커밋과 clone 대상이다. Windows 네이티브 체크아웃에서는 실제 링크 지원 설정이 필요하며, 이 리포의 기본 전제대로 WSL을 권장한다.
+
+프로젝트 전용 스킬은 사용자 홈 경로에 설치하지 않고 글로벌 설치 manifest에도 기록하지 않는다.
 
 ### `install-skills.sh` 동작 방식
 
-1. 스크립트 옆의 `skills/`에서 `SKILL.md`가 있는 하위 폴더를 찾는다.
+1. 스크립트 옆의 `skills/`에서 글로벌 배포할 `SKILL.md` 하위 폴더를 찾는다. `.agents/skills/`의 프로젝트 전용 스킬은 순회하지 않는다.
 2. Claude 전용 경로와 공통 Agent Skills 경로를 준비하고 각 스킬의 심볼릭 링크를 만든다. 링크는 리포 작업 트리를 직접 가리키므로 `git pull`만으로 스킬 내용이 반영된다.
 3. 실제 파일·디렉토리와 충돌하면 사용자 항목을 보존하고 경고한다 (`--force` 시 `.bak.<timestamp>` 백업 후 교체).
 4. `${XDG_STATE_HOME:-~/.local/state}/ai-tools-config/install-skills.manifest`에 성공한 관리 링크를 기록한다.
 5. 다음 실행에서 원본이 사라진 관리 링크만 정리한다. 사용자가 바꾼 항목은 보존한다.
+6. `uninstall`은 현재 리포 원본을 가리키는 링크와 manifest에 기록된 관리 링크만 제거한다. 사용자 파일·디렉토리 또는 다른 원본으로 바뀐 항목은 삭제하지 않는다.
 
 ## 글로벌 지침
 
@@ -37,6 +53,7 @@ Claude Code는 전용 개인 경로를 사용하고, Codex·GitHub Copilot·Open
 - 생성 파일에는 `AUTO-GENERATED-DO-NOT-EDIT` 마커가 들어간다. 마커 없는 기존 파일은 사용자 작성 파일로 간주해 `.bak.<timestamp>`로 백업한 뒤 교체한다. 자동 생성 파일은 백업 없이 갱신한다.
 - 대상이 심볼릭 링크면 링크 자체를 보존하고 실제 타깃 파일을 백업·갱신한다 (순환 링크 탐지 포함, 최대 40 depth). dangling 심링크는 dest 위치에 직접 쓴다.
 - 임시 파일은 대상과 같은 디렉토리에 만든 뒤 원자적으로 교체한다.
+- `uninstall`은 자동 생성 마커가 있는 파일만 제거한다. 대상이 심볼릭 링크면 링크 자체는 보존하고, 해석된 타깃 파일이 자동 생성 파일일 때만 제거한다.
 
 ## Copilot 역할 에이전트
 

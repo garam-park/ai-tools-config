@@ -1,0 +1,4 @@
+interface:
+  display_name: "Clarify"
+  short_description: "읽기 쉬운 단계로 짧게 설명합니다"
+  default_prompt: "$clarify를 사용해서 내가 따라갈 수 있게 작은 단계로 설명해줘."

@@ -2,7 +2,7 @@
 
 새 스킬, 새 도구 타깃, 새 글로벌 지침 델타를 추가하는 방법을 정리한다.
 
-## 새 스킬 추가
+## 새 글로벌 배포 스킬 추가
 
 > 별도 `templates/` 디렉터리는 두지 않는다. 스켈레톤이 아래 두 코드블록으로 충분하고, 특히 `skills/` 안에 템플릿 폴더를 두면 설치기가 `SKILL.md`가 있는 모든 폴더를 실제 스킬로 설치하기 때문이다.
 
@@ -46,8 +46,30 @@
 
 ### 이름 규칙
 
-- `inp-` 접두사는 Innopam 전용 작업·PR 워크플로(`TSK-*`)에만 사용한다. 범용 스킬과 이름이 충돌하지 않게 하기 위한 네임스페이스다.
-- 참고: CI의 `agents-integrity` 검사는 `skills/<name>/SKILL.md`가 있는 모든 스킬에 대해 `agents/codex.yaml` 존재를 검사하고, 옛 `agents/openai.yaml` 부재도 함께 검사한다.
+- `ntn-` 접두사는 Notion 전용 작업·PR 워크플로(`TSK-*`)에만 사용한다. 범용 스킬과 이름이 충돌하지 않게 하기 위한 네임스페이스다.
+- 참고: CI의 `agents-integrity` 검사는 글로벌 배포 스킬과 프로젝트 전용 스킬 모두에 대해 `agents/codex.yaml` 존재를 검사하고, 옛 `agents/openai.yaml` 부재도 함께 검사한다.
+
+## 새 프로젝트 전용 스킬 추가
+
+프로젝트 전용 스킬은 사용자 홈 경로에 설치하지 않고 리포 안에서만 발견되게 한다.
+
+1. `.agents/skills/<name>/SKILL.md`와 `.agents/skills/<name>/agents/codex.yaml`을 작성한다.
+2. Claude Code 호환 경로에 원본을 가리키는 상대 심볼릭 링크를 만든다.
+
+   ```bash
+   mkdir -p .claude/skills
+   ln -s "../../.agents/skills/<name>" ".claude/skills/<name>"
+   ```
+
+3. 링크와 메타데이터를 확인한다.
+
+   ```bash
+   test "$(readlink ".claude/skills/<name>")" = "../../.agents/skills/<name>"
+   test -f ".agents/skills/<name>/SKILL.md"
+   test -f ".agents/skills/<name>/agents/codex.yaml"
+   ```
+
+프로젝트 전용 스킬에는 `install-skills.sh`를 실행하지 않는다. Git은 상대 심볼릭 링크를 모드 `120000`으로 추적하므로 링크를 원본과 함께 커밋한다.
 
 ## 새 도구 타깃 추가 (스킬 설치 경로)
 

@@ -3,6 +3,7 @@
 개인용 AI 코딩 도구 설정 묶음. Claude Code, GitHub Copilot, Codex, OpenCode, Hermes Agent에서 공통 스킬을 사용하고, 도구별 글로벌 지침을 안전하게 동기화한다.
 
 ## 빠른 시작
+
 > 전제: macOS 또는 Linux 같은 Unix 환경이 필요하다. Windows에서는 WSL을 권장하며, Git Bash를 쓸 경우에도 `ln -s`가 실제 심볼릭 링크를 만들 수 있어야 한다. `bash`가 설치되어 있어야 한다.
 
 ```bash
@@ -30,6 +31,14 @@ cd ~/ai-tools-config
 
 두 doctor 모두 아무것도 변경하지 않으며, 문제가 있으면 종료 코드 1을 반환한다.
 
+설치한 관리 항목을 제거하려면:
+
+```bash
+./bootstrap.sh uninstall
+```
+
+스킬은 리포 원본 또는 manifest가 기록한 원본을 가리키는 심볼릭 링크만 제거한다. 글로벌 지침은 자동 생성 마커가 있는 파일만 제거한다. 사용자 파일·디렉토리나 다른 원본으로 바뀐 항목은 삭제하지 않는다.
+
 ## 구성
 
 ```text
@@ -37,23 +46,29 @@ ai-tools-config/
 ├── README.md
 ├── ARCHITECTURE-REVIEW.md             # 구조 리뷰 보고서 (2026-07)
 ├── bootstrap.sh                       # 설치 2종 + doctor 2종 일괄 실행
-├── install-skills.sh                  # 스킬 심볼릭 링크 설치/doctor
-├── install-global-instructions.sh     # 공통+델타 글로벌 지침 조립/doctor
+├── install-skills.sh                  # 스킬 심볼릭 링크 설치/uninstall/doctor
+├── install-global-instructions.sh     # 공통+델타 글로벌 지침 조립/uninstall/doctor
 ├── docs/
 │   ├── concepts.md                    # 구조·개념, 의도적으로 없는 것들
+│   ├── skill-management.md            # 스킬 소유권·배포 정책·상태 모델
 │   ├── platform-mapping.md            # 파일 → 도구별 설치 경로 매핑
 │   ├── device-setup.md                # 새 기기 설정, doctor 해석
-│   ├── inp-workflow.md                # Innopam inp-* 스킬 흐름과 경계
+│   ├── ntn-workflow.md                # Notion ntn-* 스킬 흐름과 경계
 │   ├── extending.md                   # 스킬/타깃/델타 추가 가이드
 │   └── archive/tasks/                 # 완료된 작업 카드 기록 (fork 시 삭제 무관)
 ├── global-instructions/               # common.md + claude.md/codex.md/opencode.md
-├── skills/                            # 각 스킬: SKILL.md + agents/codex.yaml (+부속)
-│   ├── inp-analyze-task/
-│   ├── inp-create-pr/
-│   ├── inp-review-pr/
-│   ├── inp-spec-task/
-│   ├── inp-start-task/                # + scripts/notion_task.py
-│   └── paced-explainer/               # + references/depth-patterns.md
+├── skills/                            # 글로벌 배포 스킬 원본
+│   ├── ntn-analyze-task/
+│   ├── ntn-create-pr/
+│   ├── ntn-review-pr/
+│   ├── ntn-spec-task/
+│   ├── ntn-start-task/
+│   └── clarify/                       # + references/depth-patterns.md
+├── .agents/skills/
+│   ├── import-global-skill/            # 이 리포에서만 사용하는 프로젝트 전용 스킬
+│   └── notion-save/                    # 프로젝트 로컬 Notion MCP 기반 저장 스킬
+├── .claude/skills/
+│   └── import-global-skill -> ../../.agents/skills/import-global-skill
 ├── tests/
 │   └── installers_test.sh
 ├── .github/
@@ -64,7 +79,7 @@ ai-tools-config/
 └── .gitignore
 ```
 
-`inp-` 접두사는 Innopam 전용 작업·PR 워크플로를 뜻한다. 범용 스킬과 이름이 충돌하지 않도록 이노팸의 `TSK-*` 작업을 다루는 스킬에만 사용한다.
+`ntn-` 접두사는 Notion 전용 작업·PR 워크플로를 뜻한다. 범용 스킬과 이름이 충돌하지 않도록 Notion의 `TSK-*` 작업을 다루는 스킬에만 사용한다.
 
 심볼릭 링크가 리포 작업 트리를 직접 가리키므로 `git pull`만 하면 스킬 내용이 즉시 반영된다. 설치기 재실행은 스킬을 추가·삭제했을 때만 필요하다.
 
@@ -109,6 +124,7 @@ skills:
 3. 실제 파일·디렉토리와 충돌하면 사용자 항목을 보존하고 경고한다 (`--force` 시 `.bak.<timestamp>` 백업 후 교체).
 4. `${XDG_STATE_HOME:-~/.local/state}/ai-tools-config/install-skills.manifest`에 성공한 관리 링크를 기록한다.
 5. 다음 실행에서 원본이 사라진 관리 링크만 정리한다. 사용자가 바꾼 항목은 보존한다.
+6. `uninstall`은 현재 리포 원본을 가리키는 링크와 manifest에 기록된 관리 링크만 제거한다. 같은 위치가 사용자 항목으로 바뀌었으면 보존한다.
 
 ## 글로벌 지침 동기화
 
@@ -122,10 +138,12 @@ skills:
 
 마커 없는 기존 파일은 `.bak.<timestamp>`로 백업한다. 자동 생성 파일은 백업 없이 갱신한다. 대상이 심볼릭 링크면 링크 자체를 보존하고 실제 타깃을 백업·갱신한다 (순환 링크 탐지 포함, 최대 40 depth). dangling 심링크는 dest 위치에 직접 쓴다. 임시 파일은 대상과 같은 디렉토리에 만든 뒤 원자적으로 교체한다.
 
+`uninstall`은 `AUTO-GENERATED-DO-NOT-EDIT` 마커가 있는 글로벌 지침 파일만 삭제한다. 대상이 심볼릭 링크면 링크 자체는 보존하고, 해석된 타깃 파일이 자동 생성 파일일 때만 제거한다.
+
 ## 문서
 
 - [docs/concepts.md](docs/concepts.md) — 스킬·커맨드·에이전트·훅·MCP·플러그인 개념 구분과 이 리포의 채택 여부
-- [docs/inp-workflow.md](docs/inp-workflow.md) — Innopam `inp-*` 스킬의 단계별 흐름, 경계, 종료 지점
+- [docs/ntn-workflow.md](docs/ntn-workflow.md) — Notion `ntn-*` 스킬의 단계별 흐름, 경계, 종료 지점
 - [docs/platform-mapping.md](docs/platform-mapping.md) — 리포 파일이 도구별로 어디에 설치되는지, 알려진 공백
 - [docs/device-setup.md](docs/device-setup.md) — 새 기기 설정 절차, doctor 출력 해석, 비밀값 주입
 - [docs/extending.md](docs/extending.md) — 새 스킬/도구 타깃/지침 델타 추가 방법
