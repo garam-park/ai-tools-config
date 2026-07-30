@@ -1,6 +1,6 @@
 ---
-name: nt-start-task
-description: Start a Notion TSK task, move it to in progress, prepare a feature branch, and implement it in the target repository. Use when the user invokes `$nt-start-task`, asks to start or implement a TSK task such as `TSK-3477`, or asks to begin the task in a separate git worktree.
+name: ntn-start-task
+description: Start a Notion TSK task, move it to in progress, prepare a feature branch, and implement it in the target repository. Use when the user invokes `$ntn-start-task`, asks to start or implement a TSK task such as `TSK-3477`, or asks to begin the task in a separate git worktree.
 ---
 
 # Start Task
@@ -17,22 +17,27 @@ Start a task from the configured Notion task data source, prepare a safe impleme
 - In-progress status: `진행 중`
 - Terminal statuses: `완료`, `PR완료(DEV)`, `보관됨`
 
-## Notion access preflight
+## Notion CLI usage
 
-Before doing repository, branch, or implementation work, check whether a usable Notion access path is available.
+Assume `ntn` is installed, authenticated, and able to access the intended Notion workspace. Do not run standalone setup checks such as `command -v ntn`, `ntn --version`, or `ntn doctor` before useful work solely to verify the environment.
 
-1. First check for the project-local `notion` MCP server and use it when available.
-2. If the project-local MCP is unavailable, look for another currently available Notion integration or explicit Notion page content provided by the user.
-3. If no Notion access path is available, tell the user first. Include the exact missing setup and do not continue with local repository context as a substitute task source.
+When a Notion task read or status update is needed, run the specific `ntn` command for that work first. If that command fails because `ntn` is missing, not authenticated, outdated, or unable to access the workspace, explain the exact current failure and guide setup in detail:
+
+- Install: run `curl -fsSL https://ntn.dev | bash`, or `npm install --global ntn` when Node.js 22+ and npm 10+ are available.
+- Authenticate: run `ntn login` and choose the Notion workspace that contains the task database.
+- Verify: run `ntn doctor`, then retry the exact `ntn` command that failed.
+- Access issues: confirm the signed-in Notion user can open the database or page in Notion, and confirm `.env.tsk` points to the intended database and data source.
+
+When the current tool can install CLI dependencies only with user approval, request approval after a real `ntn` command has failed for a setup reason. Only fall back to another currently available Notion integration or explicit Notion page content after the failed `ntn` command is understood. If no Notion access path is available, tell the user first. Include the exact missing setup and do not continue with local repository context as a substitute task source.
 
 ## Fetch and start the task
 
 1. Parse the task ID. Accept `TSK-3477`, `tsk-3477`, or `3477` and normalize it to `TSK-3477`.
-2. Read project-root `.env.tsk`. If `NOTION_DATABASE_ID` or `NOTION_DATA_SOURCE_ID` is missing, ask for a Notion database or task link, use the available Notion integration to determine the missing IDs, and create or update `.env.tsk`. Do not use hardcoded fallback IDs.
-3. First check for the project-local `notion` MCP server. Use it when available to fetch exactly one matching Notion page from the configured data source.
-4. If the project-local MCP is unavailable, look for another currently available Notion integration or the user's provided Notion page content.
-5. If no Notion access path is available, report that the Notion task could not be retrieved and provide the exact missing setup: `.env.tsk` keys, a usable Notion link, `NOTION_TOKEN`, or Notion integration access. Do not use local task files, branch context, PR metadata, or repository files as a substitute for the Notion task source.
-6. Set `상태` to `진행 중` unless the current status is terminal. Explicit invocation of this skill authorizes this status transition, but not changes to other Notion fields.
+2. Read project-root `.env.tsk`. If `NOTION_DATABASE_ID` or `NOTION_DATA_SOURCE_ID` is missing, ask for a Notion database or task link, use `ntn datasources resolve <database-id>` or another available Notion access path to determine the missing IDs, and create or update `.env.tsk`. Do not use hardcoded fallback IDs.
+3. Use `ntn datasources query <data-source-id>` to fetch exactly one matching Notion page from the configured data source, then `ntn pages get <page-id>` to read the page.
+4. If the required `ntn` command fails for a setup or access reason, look for another currently available Notion integration or the user's provided Notion page content only after explaining the failure.
+5. If no Notion access path is available, report that the Notion task could not be retrieved and provide the exact missing setup: `ntn` installation/login, `.env.tsk` keys, a usable Notion link, or Notion workspace access. Do not use local task files, branch context, PR metadata, or repository files as a substitute for the Notion task source.
+6. Set `상태` to `진행 중` using `ntn pages update <page-id>` unless the current status is terminal. Explicit invocation of this skill authorizes this status transition, but not changes to other Notion fields.
 7. Read the task properties and meaningful body blocks. Include the title, task ID, status, priority, tags, assignees, due dates, summary, description, and acceptance criteria in the working context.
 8. If no page is found, multiple pages match, or the task does not identify the intended implementation repository, stop and ask one concise question.
 
@@ -81,11 +86,12 @@ Before doing repository, branch, or implementation work, check whether a usable 
 
 ## Notion access failure
 
-Do not use a bundled REST fallback script. If no Notion integration can inspect the task or database link, stop with concrete setup guidance:
+Do not use a bundled REST fallback script or the project-local `notion` MCP as the default path. If `ntn` and no other Notion integration can inspect the task or database link, stop with concrete setup guidance:
 
+- how to install and authenticate `ntn`
 - which `.env.tsk` keys are missing
 - what Notion database or task link is needed
-- which Notion integration or credential needs to be connected
+- which Notion workspace access needs to be granted
 - whether the user can paste the task page content as a temporary read-only fallback
 
 If the task is terminal, do not override the status unless the user explicitly asks.

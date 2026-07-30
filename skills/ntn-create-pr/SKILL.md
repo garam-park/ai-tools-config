@@ -1,47 +1,45 @@
 ---
-name: nt-create-pr
-description: Prepare and open a Notion task pull request from a local task branch. Use when the user invokes `$nt-create-pr` or `/nt-create-pr`, or asks to validate a TSK task branch, push its commits, open or update its initial PR, write the PR body, or document merge criteria. Stop after the PR is ready for review. Do not use for review comments, failing checks, or follow-up fixes on an already-open PR; use nt-review-pr for those.
+name: ntn-create-pr
+description: Prepare and open a Notion task pull request from a local task branch. Use when the user invokes `$ntn-create-pr` or `/ntn-create-pr`, or asks to validate a TSK task branch, push its commits, open or update its initial PR, write the PR body, or document merge criteria. Stop after the PR is ready for review. Do not use for review comments, failing checks, or follow-up fixes on an already-open PR; use ntn-review-pr for those.
 ---
 
 # Create PR
 
 Prepare a Notion task branch for review and open or reuse its pull request. Finish without merging.
 
-## Notion access preflight
+## Notion CLI usage
 
-Before doing repository, branch, or PR work, check whether a usable Notion access path is available.
+Assume `ntn` is installed, authenticated, and able to access the intended Notion workspace. Do not run standalone setup checks such as `command -v ntn`, `ntn --version`, or `ntn doctor` before useful work solely to verify the environment.
 
-1. First check for the project-local `notion` MCP server and use it when available.
-2. If the project-local MCP is unavailable, look for another currently available Notion integration or explicit Notion page content provided by the user.
-3. If no Notion access path is available, tell the user first. Continue only when the local branch, commits, and diff are already sufficient to prepare the PR; do not use local repository context as a substitute task source.
+When task metadata is needed, run the specific `ntn` command for that work first. If that command fails because `ntn` is missing, not authenticated, outdated, or unable to access the workspace, explain the exact current failure and guide setup in detail:
+
+- Install: run `curl -fsSL https://ntn.dev | bash`, or `npm install --global ntn` when Node.js 22+ and npm 10+ are available.
+- Authenticate: run `ntn login` and choose the Notion workspace that contains the task database.
+- Verify: run `ntn doctor`, then retry the exact `ntn` command that failed.
+- Access issues: confirm the signed-in Notion user can open the database or page in Notion, and confirm `.env.tsk` points to the intended database and data source.
+
+When the current tool can install CLI dependencies only with user approval, request approval after a real `ntn` command has failed for a setup reason. Only fall back to another currently available Notion integration or explicit Notion page content after the failed `ntn` command is understood. If no Notion access path is available, tell the user first. Continue only when the local branch, commits, and diff are already sufficient to prepare the PR; do not use local repository context as a substitute task source.
 
 ## Resolve the task and repository
 
 1. Accept a task ID, branch name, or current branch as input. Normalize numeric task IDs to `TSK-<number>`.
 2. Read the repository README and inspect the current branch and recent commits before using external systems.
-3. When task metadata is needed, first check for the project-local `notion` MCP server. If it is unavailable, look for another currently available Notion integration or the user's provided Notion page content.
+3. When task metadata is needed, use `ntn datasources query <data-source-id>` and `ntn pages get <page-id>` first. If the required `ntn` command fails for a setup or access reason, look for another currently available Notion integration or the user's provided Notion page content only after explaining the failure.
 4. If no Notion access path is available, report that task metadata could not be retrieved and continue only when the local branch, commits, and diff are already sufficient to prepare the PR; do not treat local files, branch context, PR metadata, or repository files as a substitute task source.
 5. Confirm the implementation repository, expected base branch, and change scope. Use `develop` only when repository conventions or existing task branches establish it as the base.
 
-## GitHub preflight
+## GitHub CLI usage
 
-Before PR metadata, push, or PR creation work, verify that `gh` can be used from the target repository:
+Assume `gh` is installed, authenticated, and connected to the target repository. Do not run standalone setup checks such as `command -v gh`, `gh auth status`, or `gh repo view` before useful work solely to verify the environment.
 
-```bash
-command -v gh
-gh auth status
-git remote -v
-gh repo view
-```
-
-If `gh` works, use it for PR lookup, creation, checks, comments, and metadata unless a richer GitHub integration is already available. If `gh` is missing or not authenticated, explain the exact current failure and guide the user through setup in detail:
+Use `gh` directly for PR lookup, creation, checks, comments, and metadata unless a richer GitHub integration is already available. If the required `gh` command fails because `gh` is missing, not authenticated, or cannot resolve the repository, explain the exact current failure and guide the user through setup in detail:
 
 - Install: `brew install gh` on macOS, or choose the official GitHub CLI package for the OS.
 - Authenticate: run `gh auth login`, select `GitHub.com`, choose HTTPS or SSH to match the repository, authenticate in the browser or with the shown device code, and grant repo access when prompted.
 - Verify: run `gh auth status` and `gh repo view` in the target repository.
 - Repository issues: if `gh repo view` fails, inspect `git remote -v`, explain the expected `OWNER/REPO`, and guide the user to set or fix `origin` before continuing.
 
-Only fall back to another GitHub integration or user-provided PR URL after this preflight is understood. If no path can create or inspect the PR, stop with the setup steps still needed rather than guessing.
+Only fall back to another GitHub integration or user-provided PR URL after the failed `gh` command is understood. If no path can create or inspect the PR, stop with the setup steps still needed rather than guessing.
 
 ## Validate the branch
 
@@ -64,7 +62,7 @@ Do not stash, reset, rebase, delete branches, or overwrite user work without exp
 1. Prefer an available GitHub integration for PR metadata and creation. Use the non-interactive `gh` CLI when no equivalent integration is available.
 2. Detect an existing PR for the branch before creating one.
 3. Create a PR against the confirmed base when none exists. Include the task ID, behavior change, verification, documentation, and residual risk.
-4. If the same task PR already exists, update missing initial details only when clearly safe, then stop and direct follow-up work to `nt-review-pr`.
+4. If the same task PR already exists, update missing initial details only when clearly safe, then stop and direct follow-up work to `ntn-review-pr`.
 
 ## Document merge criteria
 
@@ -84,4 +82,4 @@ Do not merge the PR. Report:
 - verification performed
 - merge-criteria status and whether it was independently drafted
 - residual risk
-- the next action, normally `nt-review-pr <task-id>`
+- the next action, normally `ntn-review-pr <task-id>`

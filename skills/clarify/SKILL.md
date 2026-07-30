@@ -1,24 +1,24 @@
 ---
-name: paced-explainer
-description: Pace explanations in short, low-overload chunks. Trigger on confusion signals or control keywords ("다음", "더 쉽게", "예시", "모르겠어", "왜"), and explicit /paced-explainer, $paced-explainer, or 천천히 설명.
+name: clarify
+description: Clarify confusing topics in short, low-overload chunks. Trigger on confusion signals or control keywords ("다음", "더 쉽게", "예시", "모르겠어", "왜"), and explicit /clarify, $clarify, or 천천히 설명.
 ---
 
-# Paced Explainer
+# Clarify
 
-Use this skill to regulate response size, sequence, and depth. Optimize for the user's cognitive load rather than for completeness in one message.
+Use this skill to make confusing topics easier to follow by regulating response size, sequence, and depth. Optimize for the user's cognitive load rather than for completeness in one message.
 
 ## Platforms (Cross-Tool)
 
-원본은 이 리포의 `skills/paced-explainer/`이며, `install-skills.sh`가 아래 도구 경로에 리포 작업 트리를 직접 가리키는 심볼릭 링크를 만든다. 어느 도구에서 호출되든 동작은 동일하다.
+원본은 이 리포의 `skills/clarify/`이며, `install-skills.sh`가 아래 도구 경로에 리포 작업 트리를 직접 가리키는 심볼릭 링크를 만든다. 어느 도구에서 호출되든 동작은 동일하다.
 
-- **Claude Code**: `~/.claude/skills/paced-explainer/`
-- **Codex / GitHub Copilot / OpenCode**: `~/.agents/skills/paced-explainer/`
+- **Claude Code**: `~/.claude/skills/clarify/`
+- **Codex / GitHub Copilot / OpenCode**: `~/.agents/skills/clarify/`
 
-`agents/codex.yaml`은 Codex가 사용하는 선택적 UI 메타데이터다. `$paced-explainer`는 Codex 전용 슬래시-달러 문법이라 ChatGPT 등 다른 OpenAI 계열 클라이언트에서는 동작하지 않는다. 다른 도구는 공통 동작을 정의한 `SKILL.md`만 사용한다.
+`agents/codex.yaml`은 Codex가 사용하는 선택적 UI 메타데이터다. `$clarify`는 Codex 전용 슬래시-달러 문법이라 ChatGPT 등 다른 OpenAI 계열 클라이언트에서는 동작하지 않는다. 다른 도구는 공통 동작을 정의한 `SKILL.md`만 사용한다.
 
 ## Triggers
 
-- **명시 호출**: `/paced-explainer`, `$paced-explainer`, `/천천히 설명`
+- **명시 호출**: `/clarify`, `$clarify`, `/천천히 설명`
 - **자동 트리거 (가장 강력)**: 사용자가 "모르겠어", "이해 안 돼", "잘 모르겠어요" 같은 신호를 보내면 같은 스킬이 자동으로 한 단계 더 깊은 모드로 전환한다. 이 신호는 `다음`보다 우선한다.
 
 ## Core Contract
@@ -33,7 +33,7 @@ Use this skill to regulate response size, sequence, and depth. Optimize for the 
 
 ## Progress Header
 
-Start every paced explanatory response with a progress header and time estimate:
+Start every clarifying response with a progress header and time estimate:
 
 ```markdown
 [ {main topic} / {subtopic} ({n}/{m}) ]

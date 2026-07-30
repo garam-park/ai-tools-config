@@ -51,9 +51,9 @@ assert_no_glob() {
 
 make_skills_fixture() {
   local fixture="$1"
-  mkdir -p "$fixture/skills/paced-explainer"
+  mkdir -p "$fixture/skills/clarify"
   cp "$REPO_ROOT/install-skills.sh" "$fixture/install-skills.sh"
-  printf '%s\n' '---' 'name: paced-explainer' 'description: test' '---' > "$fixture/skills/paced-explainer/SKILL.md"
+  printf '%s\n' '---' 'name: clarify' 'description: test' '---' > "$fixture/skills/clarify/SKILL.md"
 }
 
 make_global_fixture() {
@@ -116,8 +116,8 @@ test_first_and_repeated_skill_install() {
   run_skills "$fixture" "$home" >/dev/null
   run_skills "$fixture" "$home" >/dev/null
   for target in .claude .agents; do
-    assert_symlink "$home/$target/skills/paced-explainer"
-    link_source="$(readlink "$home/$target/skills/paced-explainer")"
+    assert_symlink "$home/$target/skills/clarify"
+    link_source="$(readlink "$home/$target/skills/clarify")"
     [[ -f "$link_source/SKILL.md" && "$link_source" != */ ]] || fail "링크 타깃이 다릅니다: $target"
   done
   assert_file "$home/.state/ai-tools-config/install-skills.manifest"
@@ -128,14 +128,14 @@ test_collision_protection_and_partial_progress() {
   local fixture="$TEST_ROOT/collision/source"
   local home="$TEST_ROOT/collision/home"
   make_skills_fixture "$fixture"
-  mkdir -p "$home/.claude/skills/paced-explainer"
-  printf 'keep\n' > "$home/.claude/skills/paced-explainer/LOCAL_ONLY"
+  mkdir -p "$home/.claude/skills/clarify"
+  printf 'keep\n' > "$home/.claude/skills/clarify/LOCAL_ONLY"
 
   if run_skills "$fixture" "$home" >"$TEST_ROOT/collision.out" 2>&1; then
     fail "실제 디렉토리 충돌이 성공으로 보고되었습니다"
   fi
-  assert_file "$home/.claude/skills/paced-explainer/LOCAL_ONLY"
-  assert_symlink "$home/.agents/skills/paced-explainer"
+  assert_file "$home/.claude/skills/clarify/LOCAL_ONLY"
+  assert_symlink "$home/.agents/skills/clarify"
   assert_contains "$TEST_ROOT/collision.out" "덮어쓰지 않습니다"
   pass "사용자 디렉토리 보호와 부분 실패 후 계속 진행"
 }
@@ -146,10 +146,10 @@ test_wrong_symlink_replacement() {
   local link_source
   make_skills_fixture "$fixture"
   mkdir -p "$home/.claude/skills"
-  ln -s "$TEST_ROOT/nowhere" "$home/.claude/skills/paced-explainer"
+  ln -s "$TEST_ROOT/nowhere" "$home/.claude/skills/clarify"
 
   run_skills "$fixture" "$home" >/dev/null
-  link_source="$(readlink "$home/.claude/skills/paced-explainer")"
+  link_source="$(readlink "$home/.claude/skills/clarify")"
   [[ -f "$link_source/SKILL.md" ]] || fail "잘못된 링크가 교체되지 않았습니다"
   pass "잘못되거나 끊어진 기존 링크 교체"
 }
@@ -171,7 +171,7 @@ test_stale_manifest_cleanup() {
 
   printf 'corrupt manifest\n' > "$home/.state/ai-tools-config/install-skills.manifest"
   run_skills "$fixture" "$home" >/dev/null
-  assert_contains "$home/.state/ai-tools-config/install-skills.manifest" "paced-explainer"
+  assert_contains "$home/.state/ai-tools-config/install-skills.manifest" "clarify"
   pass "stale 관리 링크 정리와 손상 manifest 자가 복구"
 }
 
@@ -184,16 +184,16 @@ test_legacy_target_cleanup() {
 
   for old_target in "$home/.copilot/skills" "$home/.codex/skills" "$home/.config/opencode/skills"; do
     mkdir -p "$old_target"
-    ln -s "$fixture/skills/paced-explainer" "$old_target/paced-explainer"
-    printf '%s\t%s\t%s\n' "$old_target" paced-explainer "$fixture/skills/paced-explainer" >> "$home/.state/ai-tools-config/install-skills.manifest"
+    ln -s "$fixture/skills/clarify" "$old_target/clarify"
+    printf '%s\t%s\t%s\n' "$old_target" clarify "$fixture/skills/clarify" >> "$home/.state/ai-tools-config/install-skills.manifest"
   done
 
   run_skills "$fixture" "$home" >/dev/null
-  assert_not_exists "$home/.copilot/skills/paced-explainer"
-  assert_not_exists "$home/.codex/skills/paced-explainer"
-  assert_not_exists "$home/.config/opencode/skills/paced-explainer"
-  assert_symlink "$home/.claude/skills/paced-explainer"
-  assert_symlink "$home/.agents/skills/paced-explainer"
+  assert_not_exists "$home/.copilot/skills/clarify"
+  assert_not_exists "$home/.codex/skills/clarify"
+  assert_not_exists "$home/.config/opencode/skills/clarify"
+  assert_symlink "$home/.claude/skills/clarify"
+  assert_symlink "$home/.agents/skills/clarify"
   pass "이전 도구별 관리 링크를 공통 경로로 이전"
 }
 
@@ -221,13 +221,13 @@ test_skills_uninstall() {
   make_skills_fixture "$fixture"
 
   run_skills "$fixture" "$home" >/dev/null
-  rm -f "$home/.agents/skills/paced-explainer"
-  mkdir -p "$home/.agents/skills/paced-explainer"
-  printf 'mine\n' > "$home/.agents/skills/paced-explainer/LOCAL_ONLY"
+  rm -f "$home/.agents/skills/clarify"
+  mkdir -p "$home/.agents/skills/clarify"
+  printf 'mine\n' > "$home/.agents/skills/clarify/LOCAL_ONLY"
 
   run_skills_uninstall "$fixture" "$home" >"$TEST_ROOT/uninstall-skills.out" 2>&1
-  assert_not_exists "$home/.claude/skills/paced-explainer"
-  assert_file "$home/.agents/skills/paced-explainer/LOCAL_ONLY"
+  assert_not_exists "$home/.claude/skills/clarify"
+  assert_file "$home/.agents/skills/clarify/LOCAL_ONLY"
   assert_not_exists "$home/.state/ai-tools-config/install-skills.manifest"
   assert_contains "$TEST_ROOT/uninstall-skills.out" "사용자 항목으로 바뀌어"
   pass "스킬 uninstall: 관리 링크 제거와 사용자 항목 보존"
@@ -280,7 +280,7 @@ test_global_first_repeat_and_backup() {
   assert_contains "$home/.codex/AGENTS.md" "Codex 전용 지침"
   assert_contains "$home/.config/opencode/AGENTS.md" "OpenCode 전용 지침"
   assert_contains "$home/.claude/CLAUDE.md" "한국어로 대화해요."
-  assert_contains "$home/.claude/CLAUDE.md" '사용자가 `/paced-explainer`를 입력하면'
+  assert_contains "$home/.claude/CLAUDE.md" '사용자가 `/clarify`를 입력하면'
   assert_contains "$home/.codex/AGENTS.md" '사용자가 `$스킬명` 형식으로 스킬을 지정하면'
   assert_contains "$home/.config/opencode/AGENTS.md" '`sisyphus` 에이전트를 기본값으로 사용해요.'
   assert_contains "$home/.copilot/copilot-instructions.md" "AUTO-GENERATED-DO-NOT-EDIT"
@@ -374,13 +374,13 @@ test_skills_doctor() {
   run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.ok" 2>&1
   assert_contains "$TEST_ROOT/doctor-skills.ok" "문제 없음"
 
-  rm "$home/.claude/skills/paced-explainer"
+  rm "$home/.claude/skills/clarify"
   if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.missing" 2>&1; then
     fail "링크 누락이 doctor에서 성공으로 보고되었습니다"
   fi
   assert_contains "$TEST_ROOT/doctor-skills.missing" "링크가 없습니다"
 
-  ln -s "$TEST_ROOT/nowhere" "$home/.claude/skills/paced-explainer"
+  ln -s "$TEST_ROOT/nowhere" "$home/.claude/skills/clarify"
   if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.wrong" 2>&1; then
     fail "잘못된 링크 타깃이 doctor에서 성공으로 보고되었습니다"
   fi
@@ -404,8 +404,8 @@ test_skills_doctor() {
   assert_contains "$TEST_ROOT/doctor-skills.dangling" "dangling 링크"
   rm "$home/.claude/skills/orphan"
 
-  rm "$home/.claude/skills/paced-explainer"
-  mkdir -p "$home/.claude/skills/paced-explainer"
+  rm "$home/.claude/skills/clarify"
+  mkdir -p "$home/.claude/skills/clarify"
   if run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/doctor-skills.collision" 2>&1; then
     fail "실제 디렉토리 충돌이 doctor에서 성공으로 보고되었습니다"
   fi
@@ -476,8 +476,8 @@ test_bootstrap_smoke() {
   make_bootstrap_fixture "$fixture"
 
   HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/bootstrap.sh" >"$TEST_ROOT/bootstrap.out" 2>&1
-  assert_symlink "$home/.claude/skills/paced-explainer"
-  assert_symlink "$home/.agents/skills/paced-explainer"
+  assert_symlink "$home/.claude/skills/clarify"
+  assert_symlink "$home/.agents/skills/clarify"
   assert_contains "$home/.claude/CLAUDE.md" "AUTO-GENERATED-DO-NOT-EDIT"
   assert_contains "$home/.codex/AGENTS.md" "AUTO-GENERATED-DO-NOT-EDIT"
   assert_contains "$home/.copilot/copilot-instructions.md" "AUTO-GENERATED-DO-NOT-EDIT"
@@ -490,8 +490,8 @@ test_bootstrap_smoke() {
   assert_contains "$TEST_ROOT/bootstrap.bogus" "알 수 없는 인자"
 
   HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/bootstrap.sh" uninstall >"$TEST_ROOT/bootstrap.uninstall" 2>&1
-  assert_not_exists "$home/.claude/skills/paced-explainer"
-  assert_not_exists "$home/.agents/skills/paced-explainer"
+  assert_not_exists "$home/.claude/skills/clarify"
+  assert_not_exists "$home/.agents/skills/clarify"
   assert_not_exists "$home/.claude/CLAUDE.md"
   assert_not_exists "$home/.codex/AGENTS.md"
   assert_not_exists "$home/.copilot/copilot-instructions.md"
