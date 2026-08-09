@@ -1,35 +1,35 @@
 ---
 name: lc-spec-task
-description: Refine a local planning task (T0xx) or candidate milestone into an implementation-ready specification without creating branches or editing product code. Use when the user invokes `$lc-spec-task` or `/lc-spec-task`, asks to clarify or concretize a planning task, draft goals, scope, acceptance criteria, and verification steps, or prepare a planning document before implementation. Draft first and write planning files only after the user approves the specification and destination.
+description: 로컬 planning 작업(T0xx) 또는 후보 마일스톤을 구현 가능한 명세로 구체화합니다. 브랜치를 만들거나 제품 코드를 수정하지 않습니다. 사용자가 `$lc-spec-task` 또는 `/lc-spec-task`를 호출할 때, planning 작업의 명확화·구체화를 요청할 때, 목표·범위·완료 조건·검증 절차 초안을 요청할 때, 또는 구현 전에 planning 문서를 준비해야 할 때 사용합니다. 먼저 초안을 제시하고, 사용자가 명세와 반영 대상을 승인한 뒤에만 planning 파일을 작성합니다.
 ---
 
-# Spec Task (Local Lifecycle)
+# 명세화 (Local Lifecycle)
 
-Turn a local planning task into an actionable implementation specification through evidence gathering and focused clarification. The task source is the project's `planning/` documents, not an external tracker.
+근거 수집과 집중된 확인을 통해 로컬 planning 작업을 구현 가능한 명세로 다듬습니다. 작업 출처는 프로젝트의 `planning/` 문서이며 외부 트래커가 아닙니다.
 
-## Task source
+## 작업 출처
 
-- Entry order: `docs/.agents/planning-guide.md` when present, then `planning/milestones/index.md`, then `planning/tasks/index.md`.
-- Task IDs are `T001` style, milestone IDs are `M001` style, candidate milestone IDs are `MC001` style. IDs are never reused; a new task takes the next unused `T` number from `planning/tasks/index.md`.
-- Status values: `todo`, `doing`, `done`, `blocked`. Status lives in each document's YAML frontmatter block and is mirrored in the `index.md` boards.
+- 진입 순서: `docs/.agents/planning-guide.md`(존재 시) → `planning/milestones/index.md` → `planning/tasks/index.md`.
+- 작업 ID는 `T001`, 마일스톤 ID는 `M001`, 후보 마일스톤 ID는 `MC001` 형식입니다. ID는 재사용하지 않으며, 새 작업은 `planning/tasks/index.md`에서 다음으로 비어 있는 `T` 번호를 가져갑니다.
+- 상태 값: `todo`, `doing`, `done`, `blocked`. 상태는 각 문서의 YAML frontmatter 블록에 기록하고 `index.md` 현황판과 동기 유지합니다.
 
-## Resolve the project root and task
+## 프로젝트 루트와 작업 해석
 
-1. Use the project path the user provided. If none is provided, walk up from the current directory to the first directory containing both an agent guide (`AGENTS.md` or equivalent) and `planning/`. If the planning entry points are missing, stop and say the project does not follow the local planning convention.
-2. Accept a task ID, a milestone ID, or a candidate ID. Normalize task IDs to `T<digits>`.
-3. Read the target document's frontmatter and body, the owning milestone document, and the two index boards.
-4. If more than one target remains plausible, ask one short clarification before drafting.
-5. A `MC*` candidate may be specified, but label the result as a candidate-stage specification: it must not be treated as active implementation work until the candidate is promoted to a real milestone by the user.
+1. 사용자가 제공한 프로젝트 경로를 사용합니다. 없으면 현재 디렉터리에서 상위로 올라가며 에이전트 안내 문서(`AGENTS.md` 또는 동등 문서)와 `planning/`을 모두 포함하는 첫 디렉터리를 찾습니다. planning 진입점이 없으면 프로젝트가 로컬 planning 규약을 따르지 않는다고 알리고 중단합니다.
+2. 작업 ID, 마일스톤 ID, 후보 ID를 받습니다. 작업 ID는 `T<digits>`로 정규화합니다.
+3. 대상 문서의 frontmatter와 본문, 소속 마일스톤 문서, 두 index 현황판을 읽습니다.
+4. 대상이 여러 개로 모호하면 초안 작성 전에 짧은 확인 질문 하나를 던집니다.
+5. `MC*` 후보도 지정할 수 있지만, 결과는 후보 단계 명세로 표시해야 합니다. 후보가 실제 마일스톤으로 승격되기 전까지는 활성 구현 작업으로 취급하면 안 됩니다.
 
-## Make the draft concrete
+## 초안 구체화
 
-1. Inspect repository context only as needed: README, agent guide, conventions docs under `docs/conventions/`, nearby code, and existing contracts when they clarify behavior, constraints, naming, or test expectations.
-2. Separate confirmed requirements from assumptions.
-3. Identify decisions and ambiguous interpretations before drafting. Treat product behavior, data shape, API contract, permissions, migration behavior, and acceptance criteria as decision-bearing when more than one reasonable interpretation exists.
-4. Resolve decision-bearing ambiguity in the same session. Ask concise questions and wait for the user's answer when the answer materially changes scope, behavior, data shape, or acceptance criteria. Do not silently choose among materially different interpretations just to keep moving.
-5. Continue with explicitly labeled assumptions only when an unanswered question is non-blocking.
+1. 저장소 문맥은 필요한 만큼만 확인합니다. README, 에이전트 안내 문서, `docs/conventions/` 아래 규칙 문서, 인접 코드, 기존 계약서를 통해 동작, 제약, 네이밍, 테스트 기대치를 명확히 합니다.
+2. 확정된 요구사항과 가정을 구분합니다.
+3. 최종 초안 전에 결정 사항과 모호한 해석을 찾아냅니다. 제품 동작, 데이터 형태, API 계약, 권한, 마이그레이션 동작, 완료 조건은 합리적 해석이 둘 이상이면 결정 사항으로 취급합니다.
+4. 결정 수준의 모호함은 스킬을 호출한 같은 세션에서 해결합니다. 답이 범위·동작·데이터 형태·완료 조건을 실질적으로 바꿀 때는 간결하게 질문하고 사용자의 답을 기다립니다. 작업을 계속 이어가려고 실질적으로 다른 해석 중 하나를 몰래 고르지 않습니다.
+5. 답하지 않은 질문이 차단 요소가 아닐 때만 명시적으로 표시한 가정과 함께 진행합니다.
 
-Use the project's task document shape unless the task clearly needs another structure:
+작업이 분명히 다른 구조를 요구하지 않는 한 프로젝트의 작업 문서 형식을 사용합니다.
 
 ```markdown
 ---
@@ -46,32 +46,32 @@ depends_on: []
 ## 검증
 ```
 
-Prefer observable behavior, data contracts, states, errors, permissions, and edge cases over broad product prose. `검증` must name the exact commands to run and the expected outcome, following the project's own verification rules when its agent guide defines them.
+긴 제품 서술보다 관찰 가능한 동작, 데이터 계약, 상태, 오류, 권한, 엣지 케이스를 우선합니다. `검증`에는 실행할 명령과 기대 결과를 정확히 적어야 하며, 프로젝트 에이전트 안내 문서가 검증 규칙을 정의하면 그것을 따릅니다.
 
-## Check specification completeness
+## 명세 완성도 점검
 
-Check relevant gaps in:
+다음의 공백을 점검합니다.
 
-- user goal, actor, and workflow entry point
-- in-scope and out-of-scope behavior
-- UI loading, empty, validation, success, and error states when a screen is involved
-- API contracts, status codes, and authorization when an endpoint is involved
-- persistence, defaults, uniqueness, ordering, and migrations when data is involved
-- backward compatibility and adjacent regression risk
-- manually verifiable acceptance criteria and automated tests
-- unresolved decisions that must be answered before the specification is implementation-ready
+- 사용자 목표, 행위자, 워크플로 진입점
+- 범위 내·외 동작
+- 화면이 관련되면 UI 로딩, 빈 상태, 유효성 검사, 성공, 오류 상태
+- 엔드포인트가 관련되면 API 계약, 상태 코드, 인가
+- 데이터가 관련되면 영속화, 기본값, 유일성, 순서, 마이그레이션
+- 하위 호환성과 인접 회귀 리스크
+- 수동으로 검증 가능한 완료 조건과 자동화 테스트
+- 명세가 구현 가능으로 취급되기 전에 반드시 답해야 할 미해결 결정 사항
 
-## Approve and write
+## 승인과 작성
 
-1. Present the draft before writing any file.
-2. Ask the user to approve the specification and the destination file, or choose no write.
-3. For an existing task, preserve user-authored history: update only the sections the user approved.
-4. For a new task, create the document at the location the project's planning guide prescribes, register the row in `planning/tasks/index.md`, and keep `status: todo`. Assigning `doing` belongs to `lc-start-task`, not this skill.
+1. 어떤 파일도 쓰기 전에 초안을 먼저 제시합니다.
+2. 사용자에게 명세와 반영 대상 파일을 승인받거나, 쓰지 않는 선택을 받게 합니다.
+3. 기존 작업이면 사용자가 작성한 이력을 보존합니다. 사용자가 승인한 섹션만 갱신합니다.
+4. 새 작업이면 프로젝트 planning 가이드가 지정하는 위치에 문서를 만들고 `planning/tasks/index.md`에 행을 등록하며 `status: todo`를 유지합니다. `doing` 부여는 이 스킬이 아니라 `lc-start-task`의 역할입니다.
 
-## Guardrails
+## 가드레일
 
-- Do not set any task `status` to `doing`; implementation-start workflows own that transition.
-- Do not create branches, commits, pull requests, or product-code changes.
-- Do not write planning files before the user approves the draft and destination.
-- Do not promote a `MC*` candidate to an active milestone; that is the user's decision.
-- Do not reopen or rewrite a `done` or archived task unless the user explicitly requests it.
+- 어떤 작업의 `status`도 `doing`으로 바꾸지 않습니다. 그 전이는 구현 시작 워크플로의 역할입니다.
+- 브랜치, 커밋, 풀 리퀘스트를 만들거나 제품 코드를 수정하지 않습니다.
+- 사용자가 초안과 반영 대상을 승인하기 전에 planning 파일을 쓰지 않습니다.
+- `MC*` 후보를 활성 마일스톤으로 승격하지 않습니다. 그것은 사용자의 결정입니다.
+- 사용자가 명시적으로 요청하지 않는 한 `done`이거나 아카이브된 작업을 다시 열거나 다시 작성하지 않습니다.

@@ -1,81 +1,81 @@
 ---
 name: lc-start-task
-description: Start a local planning task (T0xx), move it to doing, prepare a feature branch, and implement it in the target repository. Use when the user invokes `$lc-start-task`, asks to start or implement a planning task such as `T053`, or asks to begin the task in a separate git worktree.
+description: 로컬 planning 작업(T0xx)을 시작해 doing으로 전환하고, feature 브랜치를 준비한 뒤 대상 저장소에서 구현합니다. 사용자가 `$lc-start-task` 또는 `/lc-start-task`를 호출할 때, `T053` 같은 planning 작업을 시작·구현해 달라고 요청할 때, 또는 작업을 별도 git 워크트리에서 시작해 달라고 요청할 때 사용합니다.
 ---
 
-# Start Task (Local Lifecycle)
+# 작업 시작 (Local Lifecycle)
 
-Start a task from the project's local `planning/` documents, prepare a safe implementation branch that follows the repository's own conventions, and proceed only when the task is actionable. Use the standard branch workflow unless the user explicitly requests a worktree.
+프로젝트의 로컬 `planning/` 문서에서 작업을 시작하고, 저장소 자체 컨벤션을 따르는 안전한 구현 브랜치를 준비하며, 작업이 실행 가능할 때만 진행합니다. 사용자가 명시적으로 워크트리를 요청하지 않는 한 표준 브랜치 방식을 사용합니다.
 
-## Task source
+## 작업 출처
 
-- Entry order: `docs/.agents/planning-guide.md` when present, then `planning/milestones/index.md`, then `planning/tasks/index.md`.
-- Task IDs are `T001` style; milestone IDs are `M001` style; candidate milestone IDs are `MC001` style.
-- Status values: `todo`, `doing`, `done`, `blocked`. Status lives in each document's YAML frontmatter block and is mirrored in the `index.md` boards; when this skill changes a status it updates both places.
-- In-progress status: `doing`. Terminal statuses: `done`, and archived documents under `planning/archive/`.
+- 진입 순서: `docs/.agents/planning-guide.md`(존재 시) → `planning/milestones/index.md` → `planning/tasks/index.md`.
+- 작업 ID는 `T001`, 마일스톤 ID는 `M001`, 후보 마일스톤 ID는 `MC001` 형식입니다.
+- 상태 값: `todo`, `doing`, `done`, `blocked`. 상태는 각 문서의 YAML frontmatter 블록에 기록하고 `index.md` 현황판과 동기 유지하며, 이 스킬이 상태를 바꾸면 두 곳을 함께 반영합니다.
+- 진행 중 상태: `doing`. 종결 상태: `done`, 그리고 `planning/archive/` 아래 문서.
 
-## Resolve the project root and task
+## 프로젝트 루트와 작업 해석
 
-1. Use the project path the user provided. If none is provided, walk up from the current directory to the first directory containing both an agent guide (`AGENTS.md` or equivalent) and `planning/`. If the planning entry points are missing, stop and say the project does not follow the local planning convention.
-2. Parse the task ID. Accept `T053`, `t053`, or `53` and normalize it to `T053`.
-3. Read the task document's frontmatter and body, the owning milestone document, and the two index boards.
-4. If no document is found, multiple documents match, or the task does not identify the intended implementation repository, stop and ask one concise question.
+1. 사용자가 제공한 프로젝트 경로를 사용합니다. 없으면 현재 디렉터리에서 상위로 올라가며 에이전트 안내 문서(`AGENTS.md` 또는 동등 문서)와 `planning/`을 모두 포함하는 첫 디렉터리를 찾습니다. planning 진입점이 없으면 프로젝트가 로컬 planning 규약을 따르지 않는다고 알리고 중단합니다.
+2. 작업 ID를 파싱합니다. `T053`, `t053`, `53`을 받아 `T053`으로 정규화합니다.
+3. 작업 문서의 frontmatter와 본문, 소속 마일스톤 문서, 두 index 현황판을 읽습니다.
+4. 문서가 없거나, 여러 문서가 일치하거나, 작업에 구현 대상 저장소가 명시되지 않으면 중단하고 간결한 질문 하나를 던집니다.
 
-## Start conditions
+## 시작 조건
 
-Start only when all of the following hold; otherwise stop and explain which condition failed:
+다음 조건이 모두 충족될 때만 시작합니다. 하나라도 어긋나면 중단하고 어떤 조건이 실패했는지 설명합니다.
 
-- The task `status` is `todo` (not `doing`, `done`, `blocked`, or archived).
-- The owning milestone exists and is not `done`/archived. If there is no active milestone, tell the user to register one in `planning/milestones/index.md` or promote a candidate first; never start work against a `MC*` candidate.
-- Every `depends_on` task is `done` (or archived with `done` status).
+- 작업 `status`가 `todo`일 것(`doing`, `done`, `blocked`, 아카이브 상태가 아닐 것).
+- 소속 마일스톤이 존재하고 `done`/아카이브가 아닐 것. 활성 마일스톤이 없다면 `planning/milestones/index.md`에 등록하거나 후보를 먼저 승격하라고 안내합니다. `MC*` 후보를 대상으로 작업을 시작하지 않습니다.
+- 모든 `depends_on` 작업이 `done`일 것(또는 `done` 상태로 아카이브되어 있을 것).
 
-Explicit invocation of this skill authorizes the `todo → doing` transition and the matching index row update, but no other planning metadata change.
+이 스킬의 명시적 호출은 `todo → doing` 전이와 대응하는 index 행 갱신을 인가하는 것이며, 다른 planning 메타데이터 변경까지 인가하는 것은 아닙니다.
 
-## Understand the workspace
+## 워크스페이스 이해
 
-1. Read the repository README and agent guide when present.
-2. Discover and follow repository guidance, including convention documents for branching, commits, pull requests, coding, and testing. Do not impose conventions from another workspace.
-3. If multiple repositories require separate branches and the split is unclear, ask before branching.
+1. 저장소 README와 에이전트 안내 문서가 있으면 읽습니다.
+2. 브랜치, 커밋, 풀 리퀘스트, 코딩, 테스트 컨벤션 문서를 포함해 저장소 지침을 찾아 따릅니다. 다른 워크스페이스의 컨벤션을 강요하지 않습니다.
+3. 여러 저장소가 각각의 브랜치를 필요로 하는데 분할 기준이 불분명하면 브랜치 생성 전에 질문합니다.
 
-## Choose the implementation mode
+## 구현 모드 선택
 
-- Use **standard mode** by default.
-- Use **worktree mode** only when the user explicitly asks for a worktree, isolated checkout, or equivalent.
-- Keep planning retrieval, task understanding, and safety checks identical in both modes.
+- 기본은 **표준 모드**입니다.
+- **워크트리 모드**는 사용자가 워크트리, 격리 체크아웃 또는 동등한 것을 명시적으로 요청할 때만 사용합니다.
+- 두 모드 모두 planning 조회, 작업 이해, 안전 점검은 동일하게 유지합니다.
 
-## Standard mode
+## 표준 모드
 
-1. Inspect `git status --short --branch` in the target repository.
-2. Derive the branch name from the repository's own branch convention (for example `feat/<kebab-slug>` from the task title). Read the repository's branch convention document when present instead of assuming a format.
-3. Start from the base branch the repository's convention names (often `develop`). If already on a suitable branch for the same task, verify its base and continue.
-4. Stop before changing branches when the repository has unrelated staged or unstaged changes, a conflicting branch exists, HEAD is detached, or the intended base is missing or diverged.
-5. Do not stash, reset, rebase, delete branches, or overwrite user work without explicit approval.
+1. 대상 저장소에서 `git status --short --branch`를 확인합니다.
+2. 브랜치 이름은 저장소 자체 브랜치 컨벤션에서 유도합니다(예: 작업 제목에서 `feat/<kebab-slug>`). 형식을 가정하지 말고 저장소의 브랜치 컨벤션 문서가 있으면 읽습니다.
+3. 저장소 컨벤션이 지정하는 base 브랜치(보통 `develop`)에서 시작합니다. 같은 작업의 적절한 브랜치에 이미 있다면 base를 확인하고 계속합니다.
+4. 저장소에 관련 없는 staged/unstaged 변경이 있거나, 충돌하는 브랜치가 존재하거나, HEAD가 detached이거나, 의도한 base가 없거나 diverged 상태면 브랜치 전환 전에 중단합니다.
+5. 명시적 승인 없이 stash, reset, rebase, 브랜치 삭제, 사용자 작업 덮어쓰기를 하지 않습니다.
 
-## Worktree mode
+## 워크트리 모드
 
-1. Treat the current workspace repository as the control checkout; do not hardcode a machine-specific project root.
-2. Inspect `git status --short --branch` and `git worktree list --porcelain` in the target repository.
-3. Derive the same feature branch as standard mode. Prefer the workspace's existing worktree convention; otherwise use `.worktrees/<repo-name>/<task-id>-<short-slug>` under the workspace root.
-4. Create the branch and worktree from the intended base without switching the control checkout when possible:
+1. 현재 워크스페이스 저장소를 제어 체크아웃으로 취급합니다. 머신 전용 프로젝트 루트를 하드코딩하지 않습니다.
+2. 대상 저장소에서 `git status --short --branch`와 `git worktree list --porcelain`을 확인합니다.
+3. 표준 모드와 동일한 feature 브랜치를 유도합니다. 워크스페이스의 기존 워크트리 컨벤션을 우선하고, 없으면 워크스페이스 루트 아래 `.worktrees/<repo-name>/<task-id>-<short-slug>`를 사용합니다.
+4. 가능하면 제어 체크아웃을 전환하지 않고 의도한 base에서 브랜치와 워크트리를 만듭니다.
 
    ```bash
    git -C <target-repo> worktree add -b <branch> <worktree-path> <base>
    ```
 
-5. If the branch already exists and is not checked out elsewhere, attach it without `-b`. If it is already checked out in a suitable worktree, continue there after verification.
-6. Stop if the path belongs to a different repository or branch, or if the base branch is missing or appears stale. Never remove a worktree or branch without explicit approval.
-7. Perform implementation edits only inside the selected worktree.
+5. 브랜치가 이미 존재하고 다른 곳에서 체크아웃되어 있지 않으면 `-b` 없이 붙입니다. 이미 적절한 워크트리에서 체크아웃되어 있으면 확인 후 그곳에서 계속합니다.
+6. 경로가 다른 저장소나 브랜치에 속하거나, base 브랜치가 없거나 오래된 것으로 보이면 중단합니다. 명시적 승인 없이 워크트리나 브랜치를 제거하지 않습니다.
+7. 구현 편집은 선택된 워크트리 안에서만 수행합니다.
 
-## Implement
+## 구현
 
-1. Confirm the branch or worktree status before editing.
-2. Implement the task end to end when requirements are actionable.
-3. Validate changes in proportion to their risk and follow the repository's own verification commands when its agent guide defines them.
-4. Ask a concise clarification only when implementation cannot proceed safely.
+1. 편집 전 브랜치 또는 워크트리 상태를 확인합니다.
+2. 요구사항이 실행 가능하면 작업을 처음부터 끝까지 구현합니다.
+3. 변경의 위험도에 맞는 검증을 수행하고, 저장소 에이전트 안내 문서가 검증 명령을 정의하면 그것을 따릅니다.
+4. 안전하게 구현을 계속할 수 없을 때만 간결한 확인 질문을 던집니다.
 
-## Guardrails
+## 가드레일
 
-- Do not start tasks whose milestone is `done`/archived, whose dependencies are incomplete, or that belong to a `MC*` candidate.
-- Do not mark a task `done`; completion and index finalization belong to the merge decision and `lc-sync-milestone`.
-- Do not stash, reset, rebase, delete branches, force-push, or overwrite user work without explicit approval.
-- Do not touch planning files other than the started task's `status` and its index row.
+- 마일스톤이 `done`/아카이브인 작업, 의존성이 미완료인 작업, `MC*` 후보에 속한 작업은 시작하지 않습니다.
+- 작업을 `done`으로 표시하지 않습니다. 완료와 index 확정은 머지 결정과 `lc-sync-milestone`의 역할입니다.
+- 명시적 승인 없이 stash, reset, rebase, 브랜치 삭제, force push, 사용자 작업 덮어쓰기를 하지 않습니다.
+- 시작한 작업의 상태와 index 행 외의 planning 파일은 건드리지 않습니다.

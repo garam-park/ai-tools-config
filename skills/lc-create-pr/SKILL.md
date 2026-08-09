@@ -1,71 +1,71 @@
 ---
 name: lc-create-pr
-description: Prepare and open a pull request for a local planning task (T0xx) from its task branch. Use when the user invokes `$lc-create-pr` or `/lc-create-pr`, or asks to validate a planning task branch, push its commits, open or update its initial PR, write the PR body, or document merge criteria. Stop after the PR is ready for review. Do not use for review comments, failing checks, or follow-up fixes on an already-open PR; use lc-review-pr for those.
+description: 로컬 planning 작업(T0xx)의 풀 리퀘스트를 작업 브랜치에서 준비해 엽니다. 사용자가 `$lc-create-pr` 또는 `/lc-create-pr`을 호출할 때, planning 작업 브랜치 검증, 커밋 push, 최초 PR 생성 또는 갱신, PR 본문 작성, merge criteria 문서화를 요청할 때 사용합니다. PR이 리뷰 가능한 상태가 되면 멈춥니다. 이미 열린 PR의 리뷰 코멘트, 실패한 체크, 후속 수정에는 이 스킬을 쓰지 말고 lc-review-pr을 사용합니다.
 ---
 
-# Create PR (Local Lifecycle)
+# PR 생성 (Local Lifecycle)
 
-Prepare a local planning task branch for review and open or reuse its pull request. Finish without merging. Task context comes from the project's `planning/` documents; no external tracker is involved.
+로컬 planning 작업의 브랜치를 리뷰용으로 준비하고 풀 리퀘스트를 열거나 재사용합니다. 머지하지 않고 마무리합니다. 작업 문맥은 프로젝트의 `planning/` 문서에서 가져오며 외부 트래커는 관여하지 않습니다.
 
-## Resolve the task and repository
+## 작업과 저장소 해석
 
-1. Accept a task ID, branch name, or the current branch as input. Normalize numeric task IDs to `T<digits>`.
-2. Read the repository README and agent guide, then inspect the current branch and recent commits.
-3. When task context is needed, read the task document, the owning milestone document, and the index boards under `planning/`. If the planning entry points are missing, continue only when the local branch, commits, and diff are already sufficient to prepare the PR; do not invent task context.
-4. Confirm the implementation repository, expected base branch, and change scope. Determine the base branch from the repository's own branch convention document rather than assuming one.
+1. 작업 ID, 브랜치 이름, 현재 브랜치를 입력으로 받습니다. 숫자 작업 ID는 `T<digits>`로 정규화합니다.
+2. 저장소 README와 에이전트 안내 문서를 읽고, 현재 브랜치와 최근 커밋을 확인합니다.
+3. 작업 문맥이 필요하면 `planning/` 아래 작업 문서, 소속 마일스톤 문서, index 현황판을 읽습니다. planning 진입점이 없으면 로컬 브랜치·커밋·diff만으로 PR을 준비하기에 충분할 때만 계속합니다. 작업 문맥을 지어내지 않습니다.
+4. 구현 저장소, 기대 base 브랜치, 변경 범위를 확인합니다. base 브랜치는 가정하지 않고 저장소 자체 브랜치 컨벤션 문서에서 결정합니다.
 
-## GitHub CLI usage
+## GitHub CLI 사용
 
-Assume `gh` is installed, authenticated, and connected to the target repository. Do not run standalone setup checks such as `command -v gh`, `gh auth status`, or `gh repo view` before useful work solely to verify the environment.
+`gh`는 설치·인증되어 대상 저장소에 연결되어 있다고 전제합니다. 환경을 확인하려는 목적만으로 `command -v gh`, `gh auth status`, `gh repo view` 같은 독립 점검을 유용한 작업 전에 실행하지 않습니다.
 
-Use `gh` directly for PR lookup, creation, checks, comments, and metadata unless a richer GitHub integration is already available. If the required `gh` command fails because `gh` is missing, not authenticated, or cannot resolve the repository, explain the exact current failure and guide the user through setup in detail:
+더 풍부한 GitHub 통합이 이미 있지 않는 한 PR 조회, 생성, 체크, 코멘트, 메타데이터에 `gh`를 직접 사용합니다. `gh`가 없거나, 인증되지 않았거나, 저장소를 해석할 수 없어 필요한 `gh` 명령이 실패하면 현재의 정확한 실패를 설명하고 설정을 자세히 안내합니다.
 
-- Install: `brew install gh` on macOS, or choose the official GitHub CLI package for the OS.
-- Authenticate: run `gh auth login`, select the matching GitHub host, choose HTTPS or SSH to match the repository, and grant repo access when prompted.
-- Verify: run `gh auth status` and `gh repo view` in the target repository.
-- Repository issues: if `gh repo view` fails, inspect `git remote -v`, explain the expected `OWNER/REPO`, and guide the user to set or fix `origin` before continuing.
+- 설치: macOS는 `brew install gh`, 그 외 OS는 공식 GitHub CLI 패키지를 선택합니다.
+- 인증: `gh auth login`을 실행하고 저장소와 맞는 GitHub 호스트를 선택한 뒤 HTTPS 또는 SSH를 고르고, 요청되면 repo 접근을 허용합니다.
+- 확인: 대상 저장소에서 `gh auth status`와 `gh repo view`를 실행합니다.
+- 저장소 문제: `gh repo view`가 실패하면 `git remote -v`를 확인하고 기대하는 `OWNER/REPO`를 설명한 뒤, 계속하기 전에 `origin`을 설정하거나 수정하도록 안내합니다.
 
-Only fall back to another GitHub integration or a user-provided PR URL after the failed `gh` command is understood. If no path can create or inspect the PR, stop with the setup steps still needed rather than guessing.
+실패한 `gh` 명령의 원인을 파악한 뒤에만 다른 GitHub 통합이나 사용자가 제공한 PR URL로 fallback합니다. PR을 만들거나 조회할 경로가 없으면 추측하지 말고 아직 필요한 설정 단계와 함께 중단합니다.
 
-## Validate the branch
+## 브랜치 검증
 
-1. Inspect branch status, recent commits, and the diff against the expected base.
-2. Require a task-scoped branch with relevant changes and no unrelated user work. The repository's PR convention may require separating mechanical changes from judgment changes; follow it.
-3. If implementation changes are uncommitted, run focused verification before committing them. Use the repository's own verification commands when its agent guide defines them.
-4. Stop and ask for direction when the repository, base branch, task, or PR target is ambiguous or the branch is detached, diverged, or mixed with unrelated changes.
+1. 브랜치 상태, 최근 커밋, 기대 base 대비 diff를 확인합니다.
+2. 브랜치는 작업 범위여야 하며 관련 변경만 있고 관련 없는 사용자 작업이 없어야 합니다. 저장소 PR 컨벤션이 기계적 변경과 판단 변경의 분리를 요구하면 따릅니다.
+3. 구현 변경이 커밋되지 않은 상태라면 커밋 전에 집중 검증을 실행합니다. 저장소 에이전트 안내 문서가 검증 명령을 정의하면 그것을 사용합니다.
+4. 저장소, base 브랜치, 작업, PR 대상이 모호하거나 브랜치가 detached, diverged 상태거나 관련 없는 변경과 섞여 있으면 중단하고 방향을 묻습니다.
 
-Do not stash, reset, rebase, delete branches, or overwrite user work without explicit approval.
+명시적 승인 없이 stash, reset, rebase, 브랜치 삭제, 사용자 작업 덮어쓰기를 하지 않습니다.
 
-## Verify, commit, and push
+## 검증, 커밋, push
 
-1. Run the repository's relevant build, test, and lint commands before committing.
-2. Commit only task-related changes. Follow the repository's commit message convention (for example Conventional Commits with the language and ending style its convention document prescribes); do not add AI attribution trailers unless the user explicitly asks.
-3. Push the task branch to its configured remote.
-4. Record the exact verification commands and results for the PR body.
+1. 커밋 전에 저장소의 관련 빌드, 테스트, lint 명령을 실행합니다.
+2. 작업 관련 변경만 커밋합니다. 저장소 커밋 메시지 컨벤션(예: 컨벤션 문서가 규정하는 언어와 종결 스타일의 Conventional Commits)을 따릅니다. 사용자가 명시적으로 요청하지 않으면 AI 귀속 트레일러를 추가하지 않습니다.
+3. 작업 브랜치를 설정된 remote에 push합니다.
+4. PR 본문에 쓸 정확한 검증 명령과 결과를 기록합니다.
 
-## Open or reuse the PR
+## PR 생성 또는 재사용
 
-1. Prefer an available GitHub integration for PR metadata and creation. Use the non-interactive `gh` CLI when no equivalent integration is available.
-2. Detect an existing PR for the branch before creating one.
-3. Create a PR against the confirmed base when none exists. Give it a title that follows the repository's PR convention, and include the task ID, behavior change, verification, documentation impact, and residual risk in the body.
-4. If the same task PR already exists, update missing initial details only when clearly safe, then stop and direct follow-up work to `lc-review-pr`.
+1. GitHub 통합이 있으면 PR 메타데이터와 생성에 그것을 우선합니다. 동등한 통합이 없으면 비대화형 `gh` CLI를 사용합니다.
+2. 생성 전에 해당 브랜치의 기존 PR을 탐지합니다.
+3. PR이 없으면 확인된 base로 생성합니다. 제목은 저장소 PR 컨벤션을 따르고, 본문에는 작업 ID, 동작 변화, 검증, 문서 영향, 잔여 리스크를 포함합니다.
+4. 같은 작업의 PR이 이미 있으면 분명히 안전할 때만 누락된 초기 내용을 보강하고 멈춘 뒤, 후속 작업은 `lc-review-pr`로 안내합니다.
 
-## Document merge criteria
+## merge criteria 문서화
 
-1. Draft concrete criteria from the task context, branch diff, verification results, and changed documentation.
-2. When the current tool supports independent workers or subagents, ask one fresh read-only worker to draft the criteria from raw artifacts without editing files.
-3. When independent workers are unavailable, draft the criteria in the main session and state that they were not independently produced. Do not block PR creation solely because a subagent feature is unavailable.
-4. Post or add the criteria to the PR only after checking that each item is supported by the artifacts.
+1. 작업 문맥, 브랜치 diff, 검증 결과, 변경된 문서에서 구체적 기준을 초안으로 작성합니다.
+2. 현재 도구가 독립 워커나 서브에이전트를 지원하면, 새로운 읽기 전용 워커 하나에게 파일 수정 없이 원본 산출물만으로 기준 초안을 작성하게 합니다.
+3. 독립 워커를 쓸 수 없으면 메인 세션에서 기준을 작성하고 독립적으로 작성되지 않았음을 밝힙니다. 서브에이전트 기능이 없다는 이유만으로 PR 생성을 막지 않습니다.
+4. 각 항목이 산출물로 뒷받침되는지 확인한 뒤에만 기준을 PR에 게시하거나 추가합니다.
 
-Cover required behavior, important failure cases, adjacent regression risk, required verification, and documentation updates.
+필수 동작, 중요한 실패 케이스, 인접 회귀 리스크, 필수 검증, 문서 업데이트를 다룹니다.
 
-## Finish
+## 마무리
 
-Do not merge the PR. Report:
+PR을 머지하지 않습니다. 보고 내용:
 
-- PR URL and base/head branches
-- commits pushed
-- verification performed
-- merge-criteria status and whether it was independently drafted
-- residual risk
-- the next action, normally `lc-review-pr` for this task
+- PR URL과 base/head 브랜치
+- push된 커밋
+- 수행한 검증
+- merge criteria 상태와 독립 작성 여부
+- 잔여 리스크
+- 다음 단계, 보통 해당 작업의 `lc-review-pr`

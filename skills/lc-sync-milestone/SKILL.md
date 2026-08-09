@@ -1,47 +1,47 @@
 ---
 name: lc-sync-milestone
-description: Inspect and reconcile a local planning milestone (M0xx) against its tasks and the two index boards — IDs, statuses, relative links, dependencies, and cycles. Use when the user invokes `$lc-sync-milestone` or `/lc-sync-milestone`, asks for a planning sync or consistency check for a milestone, or asks whether milestone documents and indexes agree. Reports findings first and changes planning metadata only with user approval; never touches product code, candidates, or generated files.
+description: 로컬 planning 마일스톤(M0xx)을 그 작업들 및 두 index 현황판과 대조해 검사·조정합니다 — ID, 상태, 상대 링크, 의존성, cycle. 사용자가 `$lc-sync-milestone` 또는 `/lc-sync-milestone`을 호출할 때, 마일스톤의 planning sync나 정합성 검사를 요청할 때, 또는 마일스톤 문서와 index가 일치하는지 물을 때 사용합니다. 발견 사항을 먼저 보고하고 planning 메타데이터는 사용자 승인 시에만 변경하며, 제품 코드·후보·생성 파일은 전혀 건드리지 않습니다.
 ---
 
-# Sync Milestone (Local Lifecycle)
+# 마일스톤 동기화 (Local Lifecycle)
 
-Reconcile one milestone's planning documents with the index boards. This is the meta step behind a project's "planning sync" task: it verifies that IDs, statuses, links, and dependencies agree, and it fixes planning metadata only with approval.
+마일스톤 하나의 planning 문서를 index 현황판과 맞춥니다. 프로젝트의 "planning sync" 작업에 해당하는 메타 단계로, ID·상태·링크·의존성이 일치하는지 검증하고 planning 메타데이터는 승인이 있을 때만 수정합니다.
 
-## Task source
+## 작업 출처
 
-- Entry order: `docs/.agents/planning-guide.md` when present, then `planning/milestones/index.md`, then `planning/tasks/index.md`.
-- Active documents live under `planning/milestones/` and `planning/tasks/`; completed documents live under `planning/archive/`; candidates live under `planning/candidates/`.
-- Milestone IDs are `M001` style, task IDs are `T001` style, candidate IDs are `MC001` style; IDs are never reused.
-- Status values: `todo`, `doing`, `done`, `blocked`, recorded in frontmatter and mirrored in the index boards.
+- 진입 순서: `docs/.agents/planning-guide.md`(존재 시) → `planning/milestones/index.md` → `planning/tasks/index.md`.
+- 활성 문서는 `planning/milestones/`와 `planning/tasks/` 아래, 완료 문서는 `planning/archive/` 아래, 후보는 `planning/candidates/` 아래에 있습니다.
+- 마일스톤 ID는 `M001`, 작업 ID는 `T001`, 후보 ID는 `MC001` 형식이며 ID는 재사용하지 않습니다.
+- 상태 값: `todo`, `doing`, `done`, `blocked`. frontmatter에 기록하고 index 현황판과 동기 유지합니다.
 
-## Resolve the project root and milestone
+## 프로젝트 루트와 마일스톤 해석
 
-1. Use the project path the user provided. If none is provided, walk up from the current directory to the first directory containing both an agent guide (`AGENTS.md` or equivalent) and `planning/`. If the planning entry points are missing, stop and say the project does not follow the local planning convention.
-2. Accept a milestone ID and normalize it to `M<digits>`. A `MC*` candidate is not syncable as a milestone: report that it must be promoted first and stop.
-3. Collect the milestone document, every task document that declares the milestone, the milestone row in `planning/milestones/index.md`, and the milestone's task rows in `planning/tasks/index.md` (including historical rows when the project keeps them).
+1. 사용자가 제공한 프로젝트 경로를 사용합니다. 없으면 현재 디렉터리에서 상위로 올라가며 에이전트 안내 문서(`AGENTS.md` 또는 동등 문서)와 `planning/`을 모두 포함하는 첫 디렉터리를 찾습니다. planning 진입점이 없으면 프로젝트가 로컬 planning 규약을 따르지 않는다고 알리고 중단합니다.
+2. 마일스톤 ID를 받아 `M<digits>`로 정규화합니다. `MC*` 후보는 마일스톤으로 동기화할 수 없습니다. 먼저 승격이 필요하다고 알리고 중단합니다.
+3. 마일스톤 문서, 해당 마일스톤을 선언하는 모든 작업 문서, `planning/milestones/index.md`의 마일스톤 행, `planning/tasks/index.md`의 해당 마일스톤 작업 행(프로젝트가 히스토리 행을 보존하면 포함)을 수집합니다.
 
-## Inspect
+## 검사
 
-Report every finding; the default run changes nothing.
+발견 사항을 모두 보고합니다. 기본 실행은 아무것도 변경하지 않습니다.
 
-1. ID integrity: IDs are unique, correctly shaped, and never reused across active and archive trees.
-2. Status agreement: each task's frontmatter `status` matches its index row, and the milestone's status matches its row. Note any duplicate or contradictory historical rows instead of picking a winner.
-3. Link integrity: every relative link in the milestone document and both index boards resolves to an existing file; note links that only resolve into `planning/archive/` as historical rather than broken when the project's pattern keeps them.
-4. Dependency integrity: every `depends_on` entry exists, no dependency cycle exists, and no active task depends on an undone prerequisite without the user knowing.
-5. Preservation: documents of other milestones, all `planning/candidates/` content, and archived content are present and unmodified.
-6. Completion: list which tasks are not `done`. Do not declare the milestone complete while any task is incomplete.
+1. ID 무결성: ID는 유일하고 형식이 올바르며 활성 트리와 아카이브 트리 전체에서 재사용되지 않습니다.
+2. 상태 일치: 각 작업의 frontmatter `status`가 index 행과 일치하고, 마일스톤 상태도 해당 행과 일치합니다. 중복되거나 모순된 히스토리 행은 임의로 하나를 고르지 않고 보고합니다.
+3. 링크 무결성: 마일스톤 문서와 두 index 현황판의 모든 상대 링크가 실제 파일로 해석됩니다. 프로젝트 패턴이 보존하는 경우 `planning/archive/`로만 해석되는 링크는 깨짐이 아니라 히스토리로 취급합니다.
+4. 의존성 무결성: 모든 `depends_on` 항목이 존재하고, 의존성 cycle이 없으며, 활성 작업이 미완료 선행 작업에 의존하는데 사용자가 그 사실을 모르고 있는 경우가 없습니다.
+5. 보존: 다른 마일스톤의 문서, `planning/candidates/` 전체 내용, 아카이브 내용이 존재하고 변경되지 않았습니다.
+6. 완료도: `done`이 아닌 작업을 나열합니다. 어떤 작업이라도 미완료인 동안은 마일스톤 완료를 선언하지 않습니다.
 
-## Fix (only with approval)
+## 수정 (승인 시에만)
 
-1. Present the findings and a concrete fix proposal per finding: exact file, exact change.
-2. Apply only the fixes the user approves, and only to planning metadata: index rows, frontmatter status fields, or link targets. Show each diff before writing.
-3. Never change task goals, scope, acceptance criteria, or verification content during a sync.
-4. Re-run the inspection after approved fixes and report the remaining state.
+1. 발견 사항과 발견별 구체적 수정 제안을 제시합니다. 정확한 파일, 정확한 변경 내용이어야 합니다.
+2. 사용자가 승인한 수정만, planning 메타데이터에 한해 적용합니다. index 행, frontmatter 상태 필드, 링크 대상만 해당합니다. 쓰기 전에 각 diff를 보여줍니다.
+3. 동기화 중 작업의 목표, 범위, 완료 조건, 검증 내용은 변경하지 않습니다.
+4. 승인된 수정 후 검사를 다시 실행하고 남은 상태를 보고합니다.
 
-## Guardrails
+## 가드레일
 
-- Do not modify product code, `.omo/` plans, `planning/candidates/`, generated files, or anything outside the approved planning metadata fixes.
-- Do not promote candidates, create milestones, or assign task IDs; those are user decisions.
-- Do not declare a milestone `done` unless every task is `done` and the user approves the status change.
-- Do not rewrite or delete historical index rows to make checks pass; report them instead.
-- Do not stash, reset, rebase, delete branches, or commit/push unless the user explicitly asks; when committing is requested, follow the repository's commit message convention and do not add AI attribution trailers.
+- 제품 코드, `.omo/` 계획, `planning/candidates/`, 생성 파일, 승인된 planning 메타데이터 수정 외의 어떤 것도 수정하지 않습니다.
+- 후보를 승격하거나, 마일스톤을 만들거나, 작업 ID를 부여하지 않습니다. 그것은 사용자의 결정입니다.
+- 모든 작업이 `done`이고 사용자가 상태 변경을 승인하지 않는 한 마일스톤을 `done`으로 선언하지 않습니다.
+- 검사를 통과시키려고 히스토리 index 행을 다시 쓰거나 삭제하지 않습니다. 대신 보고합니다.
+- 사용자가 명시적으로 요청하지 않으면 stash, reset, rebase, 브랜치 삭제, 커밋/push를 하지 않습니다. 커밋이 요청되면 저장소 커밋 메시지 컨벤션을 따르고 AI 귀속 트레일러를 추가하지 않습니다.

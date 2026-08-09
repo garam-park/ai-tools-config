@@ -1,56 +1,56 @@
 ---
 name: lc-analyze-task
-description: Read and explain a local planning task (T0xx) without changing planning files, code, branches, commits, or pull requests. Use when the user invokes `$lc-analyze-task` or `/lc-analyze-task`, provides a T0xx task ID, asks what a local planning task means, or needs its purpose, scope, requirements, dependencies, risks, and recommended next workflow understood before specification, implementation, or PR work.
+description: 로컬 planning 작업(T0xx)을 읽고 설명합니다. planning 파일, 코드, 브랜치, 커밋, 풀 리퀘스트는 전혀 변경하지 않습니다. 사용자가 `$lc-analyze-task` 또는 `/lc-analyze-task`를 호출할 때, T0xx 작업 ID를 제시할 때, planning 작업이 무엇을 의미하는지 물을 때, 또는 명세·구현·PR 작업 전에 작업의 목적, 범위, 요구사항, 의존성, 리스크, 추천 다음 단계를 파악해야 할 때 사용합니다.
 ---
 
 # 작업 분석 (Local Lifecycle)
 
-Explain a task from the project's local `planning/` documents while keeping the entire workflow read-only. `lc-` skills use the local planning markdown as the task source; they never use Notion, Linear, or any external tracker.
+프로젝트의 로컬 `planning/` 문서를 근거로 작업을 설명하며, 전체 워크플로를 읽기 전용으로 유지합니다. `lc-` 스킬은 로컬 planning 마크다운을 작업 출처로 사용하며 Notion, Linear 등 외부 트래커를 사용하지 않습니다.
 
-## Task source
+## 작업 출처
 
-- Entry order: `docs/.agents/planning-guide.md` when present, then `planning/milestones/index.md`, then `planning/tasks/index.md`.
-- Active task documents live under `planning/tasks/` (directly or in `mNNN/` subfolders); completed documents live under `planning/archive/tasks/mNNN/`; completed milestone documents live under `planning/archive/milestones/`; candidate milestones live under `planning/candidates/`.
-- Task IDs are `T001` style, milestone IDs are `M001` style, candidate milestone IDs are `MC001` style. IDs are never reused.
-- Status values: `todo`, `doing`, `done`, `blocked`. Status is recorded in each document's YAML frontmatter block and mirrored in the `index.md` boards.
+- 진입 순서: `docs/.agents/planning-guide.md`(존재 시) → `planning/milestones/index.md` → `planning/tasks/index.md`.
+- 활성 작업 문서는 `planning/tasks/` 바로 아래 또는 `mNNN/` 하위 폴더에 있고, 완료 문서는 `planning/archive/tasks/mNNN/`, 완료 마일스톤 문서는 `planning/archive/milestones/`, 후보 마일스톤은 `planning/candidates/`에 있습니다.
+- 작업 ID는 `T001`, 마일스톤 ID는 `M001`, 후보 마일스톤 ID는 `MC001` 형식입니다. ID는 재사용하지 않습니다.
+- 상태 값: `todo`, `doing`, `done`, `blocked`. 상태는 각 문서의 YAML frontmatter 블록에 기록하고 `index.md` 현황판과 동기 유지합니다.
 
-## Resolve the project root
+## 프로젝트 루트 해석
 
-1. Use the project path the user provided. If none is provided, walk up from the current directory to the first directory containing both an agent guide (`AGENTS.md` or equivalent) and `planning/`.
-2. Confirm the planning entry points exist: `planning/milestones/index.md` and `planning/tasks/index.md`. If either is missing, stop and say the project does not follow the local planning convention. Do not invent a task source or fall back to branch and PR metadata as a substitute.
+1. 사용자가 제공한 프로젝트 경로를 사용합니다. 없으면 현재 디렉터리에서 상위로 올라가며 에이전트 안내 문서(`AGENTS.md` 또는 동등 문서)와 `planning/`을 모두 포함하는 첫 디렉터리를 찾습니다.
+2. planning 진입점 `planning/milestones/index.md`와 `planning/tasks/index.md`의 존재를 확인합니다. 둘 중 하나라도 없으면 프로젝트가 로컬 planning 규약을 따르지 않는다고 알리고 중단합니다. 작업 출처를 지어내거나 브랜치·PR 메타데이터로 대체하지 않습니다.
 
-## Resolve the task
+## 작업 해석
 
-1. Accept a task ID such as `T045`, a lowercase form, or a milestone-scoped reference. Normalize it to `T<digits>`.
-2. Locate the task in `planning/tasks/index.md` (including historical rows for archived milestones) or in `planning/archive/tasks/mNNN/` for completed work.
-3. If more than one task remains plausible, ask one short clarification before analyzing.
-4. Read the task document's frontmatter (`id`, `milestone`, `status`, `depends_on`) and body sections such as 목표, 범위, 제외 범위, 완료 조건, 검증, 구현 결과.
-5. Read the owning milestone document (active path or archive path) for scope context.
-6. Treat `MC*` candidate milestones as candidate-only: they are deferred and are not active implementation work.
+1. `T045` 같은 작업 ID, 소문자 형태, 마일스톤 포함 참조를 받아 `T<digits>`로 정규화합니다.
+2. `planning/tasks/index.md`(아카이브된 마일스톤의 히스토리 행 포함) 또는 `planning/archive/tasks/mNNN/`에서 작업을 찾습니다.
+3. 가능한 작업이 여러 개면 분석 전에 짧은 확인 질문 하나를 던집니다.
+4. 작업 문서의 frontmatter(`id`, `milestone`, `status`, `depends_on`)와 목표, 범위, 제외 범위, 완료 조건, 검증, 구현 결과 같은 본문 섹션을 읽습니다.
+5. 소속 마일스톤 문서(활성 경로 또는 아카이브 경로)를 읽어 범위 맥락을 파악합니다.
+6. `MC*` 후보 마일스톤은 후보 그대로 취급합니다. 보류 상태이며 활성 구현 작업이 아닙니다.
 
-## Gather evidence
+## 근거 수집
 
-1. Separate directly supported facts from assumptions and inferences.
-2. Inspect repository context (README, agent guide, conventions docs, nearby code) only when needed to explain scope after the planning documents have been read. Avoid implementation-level exploration when the task can be explained without it.
-3. Note dependency state: any `depends_on` task that is not `done` blocks implementation.
-4. Note whether the owning milestone is active, `done`/archived, or a candidate.
+1. 직접 뒷받침되는 사실과 가정·추정을 구분합니다.
+2. 저장소 문맥(README, 에이전트 안내 문서, conventions 문서, 인접 코드)은 planning 문서를 읽은 뒤 범위를 설명하는 데 필요할 때만 확인합니다. 그것 없이 설명할 수 있는 작업이면 구현 단계까지 탐색하지 않습니다.
+3. 의존성 상태를 확인합니다. `depends_on` 작업 중 `done`이 아닌 것이 있으면 구현이 막힙니다.
+4. 소속 마일스톤이 활성인지, `done`/아카이브인지, 후보인지 확인합니다.
 
-## Produce the analysis
+## 분석 결과 작성
 
-Keep the default response concise and use the user's language. Include only useful sections:
+기본 응답은 간결하게 유지하고 사용자의 언어를 사용합니다. 유용한 섹션만 포함합니다.
 
-- `작업 요약`: explain the task in one or two plain-language sentences.
-- `확인된 사실`: report status, milestone, dependencies, and explicit requirements from the documents.
-- `해야 할 일`: describe the likely change or investigation scope.
-- `영향 범위`: identify likely packages, modules, APIs, screens, data, tests, and documentation.
-- `불명확한 점`: distinguish blocking questions from non-blocking assumptions.
-- `리스크`: note compatibility, migration, permissions, regression, and verification risks.
-- `추천 다음 단계`: recommend `lc-spec-task`, `lc-start-task`, `lc-create-pr`, or `lc-review-pr` as appropriate.
+- `작업 요약`: 작업을 한두 문장의 쉬운 말로 설명합니다.
+- `확인된 사실`: 상태, 마일스톤, 의존성, 문서에 명시된 요구사항을 보고합니다.
+- `해야 할 일`: 예상되는 변경 또는 조사 범위를 설명합니다.
+- `영향 범위`: 영향이 예상되는 패키지, 모듈, API, 화면, 데이터, 테스트, 문서를 짚습니다.
+- `불명확한 점`: 차단 요소인 질문과 차단이 아닌 가정을 구분합니다.
+- `리스크`: 호환성, 마이그레이션, 권한, 회귀, 검증 리스크를 짚습니다.
+- `추천 다음 단계`: `lc-spec-task`, `lc-start-task`, `lc-create-pr`, `lc-review-pr` 중 적절한 단계를 추천합니다.
 
-## Guardrails
+## 가드레일
 
-- Do not create, edit, move, or delete planning files, product code, or any other file.
-- Do not change branches, commits, pull requests, or comments.
-- Do not invent missing requirements. Label uncertain interpretations as assumptions.
-- If the task is `done` or archived, report it and do not recommend implementation unless the user explicitly wants follow-up work.
-- If the task belongs to a candidate milestone, report the candidate-only status and do not recommend starting implementation.
+- planning 파일, 제품 코드, 그 외 어떤 파일도 생성·수정·이동·삭제하지 않습니다.
+- 브랜치, 커밋, 풀 리퀘스트, 코멘트를 변경하지 않습니다.
+- 없는 요구사항을 지어내지 않습니다. 확신 없는 해석은 가정으로 표시합니다.
+- 작업이 `done`이거나 아카이브된 상태라면 그 사실을 보고하고, 사용자가 후속 작업을 명시적으로 원하지 않는 한 구현을 추천하지 않습니다.
+- 작업이 후보 마일스톤에 속하면 후보 상태임을 보고하고 구현 시작을 추천하지 않습니다.

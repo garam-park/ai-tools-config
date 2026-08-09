@@ -1,48 +1,48 @@
 ---
 name: lc-archive-task
-description: Archive a completed local planning task (T0xx) document into planning/archive/tasks/mNNN/ and report index impact. Use when the user invokes `$lc-archive-task` or `/lc-archive-task`, asks to move a done task into the planning archive, or asks to clean up finished task documents. Only moves documents the user approves; never edits product code, candidates, or generated files.
+description: 완료된 로컬 planning 작업(T0xx) 문서를 planning/archive/tasks/mNNN/로 아카이브하고 index 영향을 보고합니다. 사용자가 `$lc-archive-task` 또는 `/lc-archive-task`를 호출할 때, 완료된 작업을 planning 아카이브로 옮겨 달라고 요청할 때, 또는 끝난 작업 문서를 정리해 달라고 요청할 때 사용합니다. 사용자가 승인한 문서만 이동하며 제품 코드, 후보, 생성 파일은 전혀 수정하지 않습니다.
 ---
 
-# Archive Task (Local Lifecycle)
+# 작업 아카이브 (Local Lifecycle)
 
-Move completed planning documents into the project's `planning/archive/` tree while preserving history. This is a document-move workflow: it never changes task content, status meaning, or product code.
+완료된 planning 문서를 프로젝트의 `planning/archive/` 트리로 옮기면서 이력을 보존합니다. 문서 이동 워크플로이며 작업 내용, 상태의 의미, 제품 코드는 전혀 변경하지 않습니다.
 
-## Task source
+## 작업 출처
 
-- Entry order: `docs/.agents/planning-guide.md` when present, then `planning/milestones/index.md`, then `planning/tasks/index.md`.
-- Active task documents live under `planning/tasks/` (directly or in `mNNN/` subfolders); the archive lives under `planning/archive/tasks/mNNN/` grouped by milestone. Completed milestone documents live under `planning/archive/milestones/`.
-- Task IDs are `T001` style and milestone IDs are `M001` style; IDs are never reused.
-- Status values: `todo`, `doing`, `done`, `blocked`, recorded in frontmatter and mirrored in the index boards.
+- 진입 순서: `docs/.agents/planning-guide.md`(존재 시) → `planning/milestones/index.md` → `planning/tasks/index.md`.
+- 활성 작업 문서는 `planning/tasks/` 바로 아래 또는 `mNNN/` 하위 폴더에 있고, 아카이브는 `planning/archive/tasks/mNNN/`에 마일스톤 단위로 묶입니다. 완료 마일스톤 문서는 `planning/archive/milestones/`에 있습니다.
+- 작업 ID는 `T001`, 마일스톤 ID는 `M001` 형식이며 ID는 재사용하지 않습니다.
+- 상태 값: `todo`, `doing`, `done`, `blocked`. frontmatter에 기록하고 index 현황판과 동기 유지합니다.
 
-## Resolve the project root and target
+## 프로젝트 루트와 대상 해석
 
-1. Use the project path the user provided. If none is provided, walk up from the current directory to the first directory containing both an agent guide (`AGENTS.md` or equivalent) and `planning/`. If the planning entry points are missing, stop and say the project does not follow the local planning convention.
-2. Accept a task ID (or a milestone ID for milestone-document archiving) and normalize it.
-3. Locate the document and read its frontmatter, the owning milestone, and the two index boards.
-4. If the document cannot be found, is ambiguous, or already lives under `planning/archive/`, report that and stop.
+1. 사용자가 제공한 프로젝트 경로를 사용합니다. 없으면 현재 디렉터리에서 상위로 올라가며 에이전트 안내 문서(`AGENTS.md` 또는 동등 문서)와 `planning/`을 모두 포함하는 첫 디렉터리를 찾습니다. planning 진입점이 없으면 프로젝트가 로컬 planning 규약을 따르지 않는다고 알리고 중단합니다.
+2. 작업 ID(마일스톤 문서 아카이브면 마일스톤 ID)를 받아 정규화합니다.
+3. 문서를 찾아 frontmatter, 소속 마일스톤, 두 index 현황판을 읽습니다.
+4. 문서를 찾을 수 없거나, 모호하거나, 이미 `planning/archive/` 아래에 있으면 보고하고 중단합니다.
 
-## Archive conditions
+## 아카이브 조건
 
-Archive only when all of the following hold; otherwise stop and explain which condition failed:
+다음 조건이 모두 충족될 때만 아카이브합니다. 하나라도 어긋나면 중단하고 어떤 조건이 실패했는지 설명합니다.
 
-- The task document exists under an active path (not already archived).
-- The task `status` is `done` in its frontmatter and in `planning/tasks/index.md`. Never archive a `todo`, `doing`, or `blocked` task.
-- The destination directory `planning/archive/tasks/mNNN/` matches the task's owning milestone, and the destination file does not already exist.
+- 작업 문서가 활성 경로에 있을 것(이미 아카이브된 상태가 아닐 것).
+- 작업 `status`가 frontmatter와 `planning/tasks/index.md` 양쪽에서 `done`일 것. `todo`, `doing`, `blocked` 작업은 아카이브하지 않습니다.
+- 대상 디렉터리 `planning/archive/tasks/mNNN/`이 작업의 소속 마일스톤과 일치하고, 대상 파일이 이미 존재하지 않을 것.
 
-A milestone document may be archived only when the user explicitly asks and every task of that milestone is `done` and archived (or its index rows are historical). Candidate `MC*` documents are never archived; they stay in `planning/candidates/` until promoted.
+마일스톤 문서는 사용자가 명시적으로 요청하고 해당 마일스톤의 모든 작업이 `done`이자 아카이브된 상태(또는 index 행이 히스토리화된 상태)일 때만 아카이브합니다. 후보 `MC*` 문서는 아카이브하지 않으며 승격 전까지 `planning/candidates/`에 남습니다.
 
-## Plan and move
+## 계획과 이동
 
-1. Present the exact change plan before moving anything: source path, destination path, and every index link that will no longer resolve after the move.
-2. Move approved documents with `git mv` so history is preserved as renames. Do not rewrite document content during the move.
-3. Keep the historical rows in `planning/tasks/index.md` and `planning/milestones/index.md` as they are by default: the project's existing pattern preserves completed rows as history even when their links point into the archive. Do not silently rewrite or delete index rows.
-4. If the user explicitly asks to fix links or remove stale rows, make only that approved edit and show the diff first.
-5. After the move, verify the destination file exists, the source path is gone, and no other file was touched.
+1. 어떤 것도 이동하기 전에 정확한 변경 계획을 먼저 제시합니다. 원본 경로, 대상 경로, 이동 후 더 이상 해석되지 않는 모든 index 링크를 포함합니다.
+2. 승인된 문서는 `git mv`로 이동해 이력이 rename으로 보존되게 합니다. 이동 중 문서 내용을 고치지 않습니다.
+3. `planning/tasks/index.md`와 `planning/milestones/index.md`의 히스토리 행은 기본값으로 그대로 유지합니다. 프로젝트의 기존 패턴은 완료 행을 링크가 아카이브를 가리키게 되더라도 히스토리로 보존합니다. index 행을 몰래 다시 쓰거나 삭제하지 않습니다.
+4. 사용자가 링크 수정이나 stale 행 제거를 명시적으로 요청하면 그 승인된 편집만 수행하고 먼저 diff를 보여줍니다.
+5. 이동 후 대상 파일 존재, 원본 경로 제거, 다른 파일 미변경을 확인합니다.
 
-## Guardrails
+## 가드레일
 
-- Do not archive tasks that are not `done`.
-- Do not edit task or milestone document content, frontmatter, or status while archiving.
-- Do not rewrite index rows, links, or history without explicit approval; report the impact instead.
-- Do not touch product code, `planning/candidates/`, generated files, or any file outside the approved move.
-- Do not stash, reset, rebase, delete branches, or commit/push unless the user explicitly asks; when committing is requested, follow the repository's commit message convention and do not add AI attribution trailers.
+- `done`이 아닌 작업은 아카이브하지 않습니다.
+- 아카이브 중 작업·마일스톤 문서의 내용, frontmatter, 상태를 편집하지 않습니다.
+- 명시적 승인 없이 index 행, 링크, 이력을 다시 쓰지 않습니다. 대신 영향을 보고합니다.
+- 제품 코드, `planning/candidates/`, 생성 파일, 승인된 이동 외의 어떤 파일도 건드리지 않습니다.
+- 사용자가 명시적으로 요청하지 않으면 stash, reset, rebase, 브랜치 삭제, 커밋/push를 하지 않습니다. 커밋이 요청되면 저장소 커밋 메시지 컨벤션을 따르고 AI 귀속 트레일러를 추가하지 않습니다.
