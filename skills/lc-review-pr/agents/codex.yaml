@@ -1,0 +1,4 @@
+interface:
+  display_name: "LC PR 검토"
+  short_description: "열려 있는 planning 작업 PR의 리뷰, CI, 후속 수정과 merge readiness를 처리합니다"
+  default_prompt: "$lc-review-pr을 사용해 이 planning 작업 PR의 리뷰와 CI 상태를 처리해줘."
