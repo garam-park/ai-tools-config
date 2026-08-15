@@ -39,6 +39,16 @@ assert_contains() {
   grep -qF "$2" "$1" || fail "$1 에 '$2'가 없습니다"
 }
 
+assert_not_contains() {
+  if grep -qF "$2" "$1"; then
+    fail "$1 에 '$2'가 남아 있습니다"
+  fi
+}
+
+assert_line() {
+  grep -qxF "$2" "$1" || fail "$1 에 '$2' 줄이 없습니다"
+}
+
 assert_glob_exists() {
   compgen -G "$1" >/dev/null || fail "패턴과 일치하는 파일이 없습니다: $1"
 }
@@ -49,11 +59,18 @@ assert_no_glob() {
   fi
 }
 
+add_skill() {
+  local fixture="$1"
+  local name="$2"
+  mkdir -p "$fixture/skills/$name"
+  printf '%s\n' '---' "name: $name" 'description: test' '---' > "$fixture/skills/$name/SKILL.md"
+}
+
 make_skills_fixture() {
   local fixture="$1"
-  mkdir -p "$fixture/skills/clarify"
+  mkdir -p "$fixture/skills"
   cp "$REPO_ROOT/install-skills.sh" "$fixture/install-skills.sh"
-  printf '%s\n' '---' 'name: clarify' 'description: test' '---' > "$fixture/skills/clarify/SKILL.md"
+  add_skill "$fixture" clarify
 }
 
 make_global_fixture() {
@@ -80,6 +97,13 @@ run_globals() {
   local fixture="$1"
   local home="$2"
   HOME="$home" bash "$fixture/install-global-instructions.sh"
+}
+
+run_skills_cmd() {
+  local fixture="$1"
+  local home="$2"
+  shift 2
+  HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/install-skills.sh" "$@"
 }
 
 run_skills_doctor() {
@@ -231,6 +255,119 @@ test_skills_uninstall() {
   assert_not_exists "$home/.state/ai-tools-config/install-skills.manifest"
   assert_contains "$TEST_ROOT/uninstall-skills.out" "사용자 항목으로 바뀌어"
   pass "스킬 uninstall: 관리 링크 제거와 사용자 항목 보존"
+}
+
+test_selective_skill_install() {
+  local fixture="$TEST_ROOT/selective/source"
+  local home="$TEST_ROOT/selective/home"
+  local selection="$home/.state/ai-tools-config/install-skills.selection"
+  local target
+  make_skills_fixture "$fixture"
+  add_skill "$fixture" inp-create-pr
+  add_skill "$fixture" ntn-start-task
+
+  run_skills_cmd "$fixture" "$home" install clarify >/dev/null
+  for target in .claude .agents; do
+    assert_symlink "$home/$target/skills/clarify"
+    assert_not_exists "$home/$target/skills/inp-create-pr"
+    assert_not_exists "$home/$target/skills/ntn-start-task"
+  done
+  assert_line "$selection" "clarify"
+
+  # 무인자 재실행은 저장된 선택을 유지한다
+  run_skills "$fixture" "$home" >/dev/null
+  assert_not_exists "$home/.claude/skills/ntn-start-task"
+
+  # doctor는 선택된 스킬만 검사하고 제외 목록을 알린다
+  run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/selective.doctor" 2>&1
+  assert_contains "$TEST_ROOT/selective.doctor" "문제 없음"
+  assert_contains "$TEST_ROOT/selective.doctor" "선택 제외"
+
+  # 이름 인자는 더하기만 한다: 기존 선택을 지우지 않는다
+  run_skills_cmd "$fixture" "$home" install inp-create-pr >/dev/null
+  assert_symlink "$home/.claude/skills/clarify"
+  assert_symlink "$home/.claude/skills/inp-create-pr"
+  assert_not_exists "$home/.claude/skills/ntn-start-task"
+
+  if run_skills_cmd "$fixture" "$home" install nope >"$TEST_ROOT/selective.unknown" 2>&1; then
+    fail "알 수 없는 스킬 이름이 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/selective.unknown" "알 수 없는 스킬입니다"
+  assert_contains "$TEST_ROOT/selective.unknown" "사용 가능한 스킬"
+
+  if run_skills_cmd "$fixture" "$home" install --all clarify >"$TEST_ROOT/selective.conflict" 2>&1; then
+    fail "--all과 스킬 이름 조합이 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/selective.conflict" "함께 쓸 수 없습니다"
+  pass "선택 설치: 지정 스킬만 설치, 선택 유지, 더하기 의미, 인자 검증"
+}
+
+test_selection_state_transitions() {
+  local fixture="$TEST_ROOT/selection-state/source"
+  local home="$TEST_ROOT/selection-state/home"
+  local selection="$home/.state/ai-tools-config/install-skills.selection"
+  make_skills_fixture "$fixture"
+  add_skill "$fixture" inp-create-pr
+
+  # 선택 설치 상태에서는 새로 추가된 원본 스킬이 자동으로 늘지 않는다
+  run_skills_cmd "$fixture" "$home" install clarify >/dev/null
+  add_skill "$fixture" ntn-start-task
+  run_skills "$fixture" "$home" >/dev/null
+  assert_not_exists "$home/.claude/skills/ntn-start-task"
+
+  # --all 은 선택을 전체로 되돌린다
+  run_skills_cmd "$fixture" "$home" install --all >/dev/null
+  assert_symlink "$home/.claude/skills/ntn-start-task"
+  assert_symlink "$home/.agents/skills/inp-create-pr"
+  assert_line "$selection" "all"
+
+  # 전체 설치 상태에서는 이후 추가된 원본 스킬도 무인자 실행에서 설치된다
+  add_skill "$fixture" ntn-review-pr
+  run_skills "$fixture" "$home" >/dev/null
+  assert_symlink "$home/.agents/skills/ntn-review-pr"
+
+  # 선택 파일 없이 manifest만 있는 기존 설치는 전체 설치로 본다
+  rm -f "$selection"
+  add_skill "$fixture" ntn-spec-task
+  run_skills "$fixture" "$home" >/dev/null
+  assert_symlink "$home/.claude/skills/ntn-spec-task"
+  assert_line "$selection" "all"
+  pass "선택 상태 유지, --all 복귀, 선택 파일 없는 기존 설치 호환"
+}
+
+test_partial_skill_uninstall() {
+  local fixture="$TEST_ROOT/partial-uninstall/source"
+  local home="$TEST_ROOT/partial-uninstall/home"
+  local manifest="$home/.state/ai-tools-config/install-skills.manifest"
+  local selection="$home/.state/ai-tools-config/install-skills.selection"
+  local target
+  make_skills_fixture "$fixture"
+  add_skill "$fixture" inp-create-pr
+
+  run_skills "$fixture" "$home" >/dev/null
+  run_skills_cmd "$fixture" "$home" uninstall clarify >"$TEST_ROOT/partial-uninstall.out" 2>&1
+  for target in .claude .agents; do
+    assert_not_exists "$home/$target/skills/clarify"
+    assert_symlink "$home/$target/skills/inp-create-pr"
+  done
+  assert_contains "$manifest" "inp-create-pr"
+  assert_not_contains "$manifest" "clarify"
+  assert_line "$selection" "inp-create-pr"
+
+  # 남은 선택만 검사하므로 doctor는 통과한다
+  run_skills_doctor "$fixture" "$home" >"$TEST_ROOT/partial-uninstall.doctor" 2>&1
+  assert_contains "$TEST_ROOT/partial-uninstall.doctor" "문제 없음"
+
+  # 무인자 재실행이 제거한 스킬을 되살리지 않는다
+  run_skills "$fixture" "$home" >/dev/null
+  assert_not_exists "$home/.claude/skills/clarify"
+
+  # 마지막 관리 스킬까지 제거하면 상태 파일도 정리된다
+  run_skills_cmd "$fixture" "$home" uninstall inp-create-pr >/dev/null
+  assert_not_exists "$home/.agents/skills/inp-create-pr"
+  assert_not_exists "$manifest"
+  assert_not_exists "$selection"
+  pass "선택 uninstall: 지정 스킬만 제거, manifest·선택 상태 갱신"
 }
 
 test_empty_skill_source_errors() {
@@ -414,7 +551,12 @@ test_skills_doctor() {
   if HOME="$home" bash "$fixture/install-skills.sh" bogus >"$TEST_ROOT/doctor-skills.bogus" 2>&1; then
     fail "알 수 없는 인자가 성공으로 보고되었습니다"
   fi
-  assert_contains "$TEST_ROOT/doctor-skills.bogus" "알 수 없는 인자"
+  assert_contains "$TEST_ROOT/doctor-skills.bogus" "알 수 없는 스킬입니다"
+
+  if HOME="$home" bash "$fixture/install-skills.sh" --bogus >"$TEST_ROOT/doctor-skills.badopt" 2>&1; then
+    fail "알 수 없는 옵션이 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/doctor-skills.badopt" "알 수 없는 옵션입니다"
   pass "skills doctor: 설치 전/후, 누락·오링크·stale 진단과 인자 검증"
 }
 
@@ -484,10 +626,15 @@ test_bootstrap_smoke() {
   assert_contains "$TEST_ROOT/bootstrap.out" "bootstrap 완료"
   assert_contains "$TEST_ROOT/bootstrap.out" "copilot-instructions.md"
 
-  if HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/bootstrap.sh" bogus >"$TEST_ROOT/bootstrap.bogus" 2>&1; then
+  if HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/bootstrap.sh" --bogus >"$TEST_ROOT/bootstrap.bogus" 2>&1; then
     fail "bootstrap의 알 수 없는 인자가 성공으로 보고되었습니다"
   fi
   assert_contains "$TEST_ROOT/bootstrap.bogus" "알 수 없는 인자"
+
+  if HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/bootstrap.sh" uninstall clarify >"$TEST_ROOT/bootstrap.uninstall-arg" 2>&1; then
+    fail "bootstrap uninstall의 추가 인자가 성공으로 보고되었습니다"
+  fi
+  assert_contains "$TEST_ROOT/bootstrap.uninstall-arg" "쓸 수 없습니다"
 
   HOME="$home" XDG_STATE_HOME="$home/.state" bash "$fixture/bootstrap.sh" uninstall >"$TEST_ROOT/bootstrap.uninstall" 2>&1
   assert_not_exists "$home/.claude/skills/clarify"
@@ -506,6 +653,9 @@ test_stale_manifest_cleanup
 test_legacy_target_cleanup
 test_stale_user_item_preserved
 test_skills_uninstall
+test_selective_skill_install
+test_selection_state_transitions
+test_partial_skill_uninstall
 test_empty_skill_source_errors
 test_target_mkdir_error
 test_global_first_repeat_and_backup
