@@ -1,0 +1,4 @@
+interface:
+  display_name: "LC PR 생성"
+  short_description: "로컬 planning/ 작업 브랜치를 검증하고 최초 PR을 생성하거나 재사용합니다"
+  default_prompt: "$lc-create-pr을 사용해 이 planning 작업 브랜치의 PR을 준비해줘."

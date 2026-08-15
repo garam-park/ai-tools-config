@@ -1,0 +1,4 @@
+interface:
+  display_name: "LC 마일스톤 동기화"
+  short_description: "planning 마일스톤과 task 문서, 두 index의 ID·상태·링크·의존성을 검사하고 조정합니다"
+  default_prompt: "$lc-sync-milestone을 사용해 이 마일스톤의 planning 문서와 index 정합성을 검사해줘."

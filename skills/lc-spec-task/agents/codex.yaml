@@ -1,0 +1,4 @@
+interface:
+  display_name: "LC 작업 명세화"
+  short_description: "로컬 planning/ 작업을 구현 가능한 목표·범위·완료 조건·검증 명세로 구체화합니다"
+  default_prompt: "$lc-spec-task를 사용해 이 planning 작업을 구현 가능한 명세 초안으로 정리해줘."

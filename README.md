@@ -66,10 +66,18 @@ ai-tools-config/
 │   ├── platform-mapping.md            # 파일 → 도구별 설치 경로 매핑
 │   ├── device-setup.md                # 새 기기 설정, doctor 해석
 │   ├── ntn-workflow.md                # Notion ntn-* 스킬 흐름과 경계
+│   ├── lc-workflow.md                 # 로컬 planning lc-* 스킬 흐름과 경계
 │   ├── extending.md                   # 스킬/타깃/델타 추가 가이드
 │   └── archive/tasks/                 # 완료된 작업 카드 기록 (fork 시 삭제 무관)
 ├── global-instructions/               # common.md + claude.md/codex.md/opencode.md
 ├── skills/                            # 글로벌 배포 스킬 원본
+│   ├── lc-analyze-task/
+│   ├── lc-archive-task/
+│   ├── lc-create-pr/
+│   ├── lc-review-pr/
+│   ├── lc-spec-task/
+│   ├── lc-start-task/
+│   ├── lc-sync-milestone/
 │   ├── ntn-analyze-task/
 │   ├── ntn-create-pr/
 │   ├── ntn-review-pr/
@@ -92,6 +100,8 @@ ai-tools-config/
 ```
 
 `ntn-` 접두사는 Notion 전용 작업·PR 워크플로를 뜻한다. 범용 스킬과 이름이 충돌하지 않도록 Notion의 `TSK-*` 작업을 다루는 스킬에만 사용한다.
+
+`lc-` 접두사는 Local Lifecycle을 뜻한다. Notion·Linear 같은 외부 트래커 없이 로컬 `planning/` 문서 기반 작업(`T0xx`)의 생명주기를 다루는 스킬에만 사용한다.
 
 심볼릭 링크가 리포 작업 트리를 직접 가리키므로 `git pull`만 하면 스킬 내용이 즉시 반영된다. 설치기 재실행은 스킬을 추가·삭제했을 때만 필요하다.
 
@@ -159,6 +169,7 @@ skills:
 
 - [docs/concepts.md](docs/concepts.md) — 스킬·커맨드·에이전트·훅·MCP·플러그인 개념 구분과 이 리포의 채택 여부
 - [docs/ntn-workflow.md](docs/ntn-workflow.md) — Notion `ntn-*` 스킬의 단계별 흐름, 경계, 종료 지점
+- [docs/lc-workflow.md](docs/lc-workflow.md) — 로컬 planning `lc-*` 스킬의 단계별 흐름, 경계, 종료 지점
 - [docs/platform-mapping.md](docs/platform-mapping.md) — 리포 파일이 도구별로 어디에 설치되는지, 알려진 공백
 - [docs/device-setup.md](docs/device-setup.md) — 새 기기 설정 절차, doctor 출력 해석, 비밀값 주입
 - [docs/extending.md](docs/extending.md) — 새 스킬/도구 타깃/지침 델타 추가 방법
