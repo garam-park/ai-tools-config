@@ -42,7 +42,7 @@
    ./install-skills.sh doctor
    ```
 
-   `install-skills.sh`는 `SKILL.md`가 있는 폴더만 원본 스킬로 인식한다.
+   `install-skills.sh`는 `SKILL.md`가 있는 폴더만 원본 스킬로 인식한다. 선택 설치를 쓰는 기기라면 새 스킬은 자동으로 늘지 않으므로 `./install-skills.sh install <name>`으로 선택에 추가한다.
 
 ### 이름 규칙
 

@@ -29,6 +29,22 @@ cd ~/ai-tools-config
 ./install-global-instructions.sh doctor # 글로벌 지침 동기화 상태 점검
 ```
 
+## 선택 설치
+
+기기마다 필요한 스킬만 설치할 수 있다.
+
+```bash
+./install-skills.sh install clarify        # 지정한 스킬만 설치
+./install-skills.sh install ntn-start-task # 선택에 추가 (기존 선택 유지)
+./install-skills.sh uninstall clarify      # 선택에서 제거 (링크와 선택 상태 모두)
+./install-skills.sh install --all          # 전체 설치로 복귀
+./bootstrap.sh install clarify             # bootstrap에서도 동일하게 지정
+```
+
+선택 상태는 `${XDG_STATE_HOME:-~/.local/state}/ai-tools-config/install-skills.selection`에 `all` 또는 스킬 이름 목록으로 남는다. 이후 무인자 실행과 `doctor`는 이 선택을 기준으로 동작하므로, `./bootstrap.sh`를 다시 돌려도 선택하지 않은 스킬이 되살아나지 않는다.
+
+이름 인자는 더하기만 한다. 전체 설치 상태에서 일부만 남기려면 빼려는 스킬을 `uninstall <이름>`으로 제거하거나, `uninstall` 후 원하는 이름으로 다시 설치한다. 선택 설치 중에는 리포에 새로 추가된 스킬이 자동으로 설치되지 않는다.
+
 설치 해제도 가능하다:
 
 ```bash
@@ -52,10 +68,11 @@ cd ~/ai-tools-config
 | `dangling 링크` | 타깃이 사라진 링크 | `install` 재실행 또는 수동 삭제 |
 | `내용이 원본과 다릅니다` | 글로벌 지침이 원본과 드리프트 | `install-global-instructions.sh` 재실행 |
 | `자동 생성 마커가 없습니다` | 사용자 작성 파일이 자리를 차지 | `install` 실행 시 `.bak.<timestamp>` 백업 후 교체 |
+| `선택 제외(검사 안 함)` | 선택 설치라 해당 스킬은 검사 대상이 아님 (문제 아님) | 필요하면 `install <이름>` 또는 `install --all` |
 
 ## git pull 이후
 
-심볼릭 링크가 리포 작업 트리(`~/ai-tools-config/skills/`)를 직접 가리키므로, `git pull`만 하면 스킬 내용이 즉시 반영된다. `./install-skills.sh` 재실행은 스킬을 추가하거나 삭제했을 때만 필요하다. 제거된 리포 스킬의 도구별 심볼릭 링크는 설치 스크립트의 manifest가 관리 링크인지 확인한 뒤 정리한다. 전체 설치 해제가 필요하면 `./bootstrap.sh uninstall`을 사용한다.
+심볼릭 링크가 리포 작업 트리(`~/ai-tools-config/skills/`)를 직접 가리키므로, `git pull`만 하면 스킬 내용이 즉시 반영된다. `./install-skills.sh` 재실행은 스킬을 추가하거나 삭제했을 때만 필요하다. 선택 설치 중이라면 새로 추가된 스킬은 이름을 지정해야 설치된다. 제거된 리포 스킬의 도구별 심볼릭 링크는 설치 스크립트의 manifest가 관리 링크인지 확인한 뒤 정리한다. 전체 설치 해제가 필요하면 `./bootstrap.sh uninstall`을 사용한다.
 
 ## 마이그레이션: 구 `~/.local/share/skills/` 구조에서
 
