@@ -3,7 +3,7 @@
 #
 # 새 머신 설정을 한 번에 수행한다:
 #   install:
-#     1) ./install-skills.sh install [--force]
+#     1) ./install-skills.sh install [--force] [--all] [스킬...]
 #     2) ./install-global-instructions.sh install
 #     3) 두 스크립트의 doctor로 설치 상태 확인 (문제 시 exit 1)
 #   uninstall:
@@ -11,7 +11,9 @@
 #     2) ./install-global-instructions.sh uninstall
 #
 # 사용법:
-#   ./bootstrap.sh [install] [--force]   # --force는 install-skills.sh 에만 전달된다
+#   ./bootstrap.sh [install] [--force] [--all] [스킬...]
+#     --force, --all, 스킬 이름은 install-skills.sh 에만 전달된다.
+#     스킬 이름을 주면 그 스킬만 설치하고, 선택은 다음 실행에서도 유지된다.
 #   ./bootstrap.sh uninstall
 
 set -euo pipefail
@@ -19,7 +21,7 @@ set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
-  echo "사용법: $0 [install [--force] | uninstall]" >&2
+  echo "사용법: $0 [install [--force] [--all] [스킬...] | uninstall]" >&2
 }
 
 CMD="install"
@@ -31,19 +33,27 @@ case "${1:-}" in
     ;;
 esac
 
-FORCE=0
-if [[ "${1:-}" == "--force" ]]; then
-  if [[ "$CMD" != "install" ]]; then
-    echo "error: --force는 install에서만 사용할 수 있습니다." >&2
-    usage
-    exit 2
-  fi
-  FORCE=1
+# --force, --all, 스킬 이름은 해석하지 않고 install-skills.sh 로 넘긴다.
+skill_args=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --force|--all)
+      skill_args+=("$1")
+      ;;
+    -*)
+      echo "error: 알 수 없는 인자입니다: $1" >&2
+      usage
+      exit 2
+      ;;
+    *)
+      skill_args+=("$1")
+      ;;
+  esac
   shift
-fi
+done
 
-if [[ $# -gt 0 ]]; then
-  echo "error: 알 수 없는 인자입니다: $1" >&2
+if [[ "$CMD" != "install" && ${#skill_args[@]} -gt 0 ]]; then
+  echo "error: uninstall에는 --force, --all, 스킬 이름을 쓸 수 없습니다." >&2
   usage
   exit 2
 fi
@@ -56,12 +66,9 @@ if [[ "$CMD" == "uninstall" ]]; then
   exit 0
 fi
 
-if [[ "$FORCE" == "1" ]]; then
-  bash "$DIR/install-skills.sh" install --force
-else
-  bash "$DIR/install-skills.sh" install
-fi
+bash "$DIR/install-skills.sh" install ${skill_args[@]+"${skill_args[@]}"}
 bash "$DIR/install-global-instructions.sh" install
+# doctor는 인자 없이 실행한다. 설치기가 기록한 선택 상태를 그대로 읽어 판정한다.
 bash "$DIR/install-skills.sh" doctor
 bash "$DIR/install-global-instructions.sh" doctor
 

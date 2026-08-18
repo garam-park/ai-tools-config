@@ -22,6 +22,18 @@ cd ~/ai-tools-config
 
 `bootstrap.sh`는 스킬 설치 → 글로벌 지침 동기화 → 두 `doctor` 검사를 순서대로 실행한다. 전제조건과 doctor 출력 해석은 [docs/device-setup.md](docs/device-setup.md) 참조.
 
+원하는 스킬만 설치할 수도 있다:
+
+```bash
+./install-skills.sh install clarify            # clarify만 설치
+./install-skills.sh install inp-create-pr      # 선택에 추가 (기존 선택은 유지)
+./install-skills.sh uninstall clarify          # 선택에서 제거
+./install-skills.sh install --all              # 전체 설치로 복귀
+./bootstrap.sh install clarify                 # bootstrap으로도 동일하게 지정
+```
+
+선택은 `${XDG_STATE_HOME:-~/.local/state}/ai-tools-config/install-skills.selection`에 남아 이후 무인자 실행(`./install-skills.sh`, `./bootstrap.sh`)과 `doctor` 판정에서도 유지된다. 선택 설치 중에는 리포에 새로 추가된 스킬이 자동으로 설치되지 않으므로, 필요할 때 이름을 지정하거나 `--all`로 전체 설치로 돌아간다.
+
 설치 상태만 점검하려면:
 
 ```bash
@@ -120,11 +132,14 @@ skills:
 ## `install-skills.sh` 동작 방식
 
 1. 스크립트 옆의 `skills/`에서 `SKILL.md`가 있는 하위 폴더를 찾는다.
-2. Claude 전용 경로와 공통 Agent Skills 경로를 준비하고 각 스킬의 심볼릭 링크를 만든다.
-3. 실제 파일·디렉토리와 충돌하면 사용자 항목을 보존하고 경고한다 (`--force` 시 `.bak.<timestamp>` 백업 후 교체).
-4. `${XDG_STATE_HOME:-~/.local/state}/ai-tools-config/install-skills.manifest`에 성공한 관리 링크를 기록한다.
-5. 다음 실행에서 원본이 사라진 관리 링크만 정리한다. 사용자가 바꾼 항목은 보존한다.
-6. `uninstall`은 현재 리포 원본을 가리키는 링크와 manifest에 기록된 관리 링크만 제거한다. 같은 위치가 사용자 항목으로 바뀌었으면 보존한다.
+2. 이번에 다룰 스킬을 정한다. 이름 인자가 있으면 저장된 선택에 더하고, 없으면 저장된 선택을 그대로 쓴다 (선택 기록이 없거나 `--all`이면 전체).
+3. Claude 전용 경로와 공통 Agent Skills 경로를 준비하고 선택된 스킬의 심볼릭 링크를 만든다.
+4. 실제 파일·디렉토리와 충돌하면 사용자 항목을 보존하고 경고한다 (`--force` 시 `.bak.<timestamp>` 백업 후 교체).
+5. `${XDG_STATE_HOME:-~/.local/state}/ai-tools-config/install-skills.manifest`에 성공한 관리 링크를, `install-skills.selection`에 선택 상태를 기록한다.
+6. 다음 실행에서 원본이 사라진 관리 링크만 정리한다. 선택에서 빠진 스킬의 링크는 건드리지 않고, 사용자가 바꾼 항목도 보존한다.
+7. `uninstall`은 현재 리포 원본을 가리키는 링크와 manifest에 기록된 관리 링크만 제거한다. 같은 위치가 사용자 항목으로 바뀌었으면 보존한다. 이름을 주면 그 스킬만 제거하고 선택에서도 뺀다.
+
+`doctor`는 선택된 스킬만 검사하고, 선택에서 빠진 스킬은 문제로 보고하지 않고 제외 목록으로 알린다.
 
 ## 글로벌 지침 동기화
 
