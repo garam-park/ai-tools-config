@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "notion": {
+      "type": "stdio",
+      "command": "${workspaceFolder}/scripts/mcp/notion/start.sh",
+      "args": []
+    }
+  }
+}
