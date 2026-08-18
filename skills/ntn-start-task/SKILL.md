@@ -11,6 +11,7 @@ Start a task from the configured Notion task data source, prepare a safe impleme
 
 - Config file: project-root `.env.tsk`
 - Required keys: `NOTION_DATABASE_ID`, `NOTION_DATA_SOURCE_ID`
+- Template: `skills/ntn-start-task/references/env.tsk.example` in this skill's source repository
 - No built-in database defaults are allowed. If either key is missing, ask the user for a Notion database or task link that the active Notion integration can inspect, then use that link to determine and persist the missing values in `.env.tsk`.
 - Task ID property: prefer `작업 ID` (`unique_id`, prefix `TSK`) when present; otherwise identify the matching ID/title property from the database schema and ask if ambiguous.
 - Status property: prefer `상태` when present.
