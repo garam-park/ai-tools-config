@@ -4,6 +4,8 @@
 
 ## 리포가 관리하는 세 자산군
 
+> 아래 표는 **글로벌로 배포되는 자산**만 다룬다. 배포되지 않는 이 리포 전용 설정(`.mcp.json`, `.omm`, `scripts/mcp/`, `.agents/skills/` 등)까지 포함한 네 계층 구분과 판별 기준은 [repo-layout.md](repo-layout.md)를 따른다.
+
 | 자산군 | 위치 | 성격 |
 |--------|------|------|
 | 스킬 | `skills/<name>/`, `.agents/skills/<name>/` | 플랫폼 중립 `SKILL.md` (frontmatter는 `name`+`description`만) + Codex 전용 UI 메타데이터 `agents/codex.yaml`. `skills/`는 글로벌 배포 원본, `.agents/skills/`는 프로젝트 전용 원본이다. |

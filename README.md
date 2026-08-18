@@ -53,53 +53,76 @@ cd ~/ai-tools-config
 
 ## 구성
 
+파일은 성격이 다른 네 계층으로 나뉜다. 판별 기준과 전체 목록은 [docs/repo-layout.md](docs/repo-layout.md) 참조.
+
+> **판별 기준**: `install-*.sh`를 통해 `$HOME`으로 나가면 배포 자산, 나가지 않으면 이 리포 전용 설정이다.
+
+### 1. 배포 자산 — `$HOME`으로 나가는 것
+
 ```text
-ai-tools-config/
-├── README.md
-├── ARCHITECTURE-REVIEW.md             # 구조 리뷰 보고서 (2026-07)
-├── bootstrap.sh                       # 설치 2종 + doctor 2종 일괄 실행
-├── install-skills.sh                  # 스킬 심볼릭 링크 설치/uninstall/doctor
-├── install-global-instructions.sh     # 공통+델타 글로벌 지침 조립/uninstall/doctor
-├── docs/
-│   ├── concepts.md                    # 구조·개념, 의도적으로 없는 것들
-│   ├── skill-management.md            # 스킬 소유권·배포 정책·상태 모델
-│   ├── platform-mapping.md            # 파일 → 도구별 설치 경로 매핑
-│   ├── device-setup.md                # 새 기기 설정, doctor 해석
-│   ├── ntn-workflow.md                # Notion ntn-* 스킬 흐름과 경계
-│   ├── lc-workflow.md                 # 로컬 planning lc-* 스킬 흐름과 경계
-│   ├── extending.md                   # 스킬/타깃/델타 추가 가이드
-│   └── archive/tasks/                 # 완료된 작업 카드 기록 (fork 시 삭제 무관)
-├── global-instructions/               # common.md + claude.md/codex.md/opencode.md
-├── skills/                            # 글로벌 배포 스킬 원본
-│   ├── lc-analyze-task/
-│   ├── lc-archive-task/
-│   ├── lc-create-pr/
-│   ├── lc-review-pr/
-│   ├── lc-spec-task/
-│   ├── lc-start-task/
-│   ├── lc-sync-milestone/
-│   ├── ntn-analyze-task/
-│   ├── ntn-create-pr/
-│   ├── ntn-review-pr/
-│   ├── ntn-spec-task/
-│   ├── ntn-start-task/
-│   ├── align-intent/                  # 실행 전 의도 정렬 게이트
-│   ├── clarify/                       # + references/depth-patterns.md
-│   └── semantic-commits/              # 변경을 의미 단위로 나눠 커밋
-├── .agents/skills/
-│   ├── import-global-skill/            # 이 리포에서만 사용하는 프로젝트 전용 스킬
-│   └── notion-save/                    # 프로젝트 로컬 Notion MCP 기반 저장 스킬
-├── .claude/skills/
-│   └── import-global-skill -> ../../.agents/skills/import-global-skill
-├── tests/
-│   └── installers_test.sh
-├── .github/
-│   ├── workflows/                     # shell.yml, merge-requirements.yml
-│   ├── agents/                        # Copilot 역할 에이전트 4종 (GitHub 고정 경로)
-│   ├── MERGE_REQUIREMENTS.md
-│   └── PULL_REQUEST_TEMPLATE.md
-└── .gitignore
+skills/                                # 글로벌 배포 스킬 원본
+├── align-intent/                      # 실행 전 의도 정렬 게이트
+├── clarify/                           # + references/depth-patterns.md
+├── semantic-commits/                  # 변경을 의미 단위로 나눠 커밋
+├── mcp-script-builder/                # 프로젝트 로컬 MCP 런처 생성·등록·감사
+├── inp-*/                             # Innopam Notion 작업 워크플로 5종
+├── lc-*/                              # 로컬 planning 작업 워크플로 7종
+└── ntn-*/                             # Notion 작업 워크플로 5종
+                                       #   └ ntn-start-task/references/env.tsk.example
+global-instructions/                   # common.md + claude/codex/copilot/opencode 델타
 ```
+
+### 2. 설치 하네스 — 내보내는 도구
+
+```text
+bootstrap.sh                           # 설치 2종 + doctor 2종 일괄 실행
+install-skills.sh                      # 스킬 심볼릭 링크 설치/uninstall/doctor
+install-global-instructions.sh         # 공통+델타 글로벌 지침 조립/uninstall/doctor
+tests/installers_test.sh               # 격리 HOME 기반 설치기 테스트
+.github/workflows/                     # shell.yml, merge-requirements.yml
+```
+
+### 3. 이 리포 전용 설정 — 여기서 작업할 때만 쓰는 것
+
+경로가 도구에 의해 강제되므로 옮길 수 없다.
+
+```text
+AGENTS.md                              # 리포 작업 지침
+.mcp.json                              # Claude Code 프로젝트 MCP
+.codex/config.toml                     # Codex 프로젝트 MCP
+.vscode/mcp.json                       # VS Code Copilot 프로젝트 MCP (이 파일만 추적)
+opencode.json                          # OpenCode 프로젝트 MCP
+.omm                                   # MCP 소유권·생성 파일 해시 매니페스트
+scripts/mcp/notion/                    # MCP 런처 + .env.example (.env는 미추적)
+.agents/skills/                        # 프로젝트 전용 스킬 원본
+│   ├── import-global-skill/
+│   └── notion-save/
+.claude/skills/
+└── import-global-skill -> ../../.agents/skills/import-global-skill
+.github/agents/                        # 이 리포 PR용 Copilot 역할 에이전트 4종
+```
+
+### 4. 문서
+
+```text
+README.md
+ARCHITECTURE-REVIEW.md                 # 구조 리뷰 보고서 (2026-07)
+docs/
+├── repo-layout.md                     # 네 계층 판별 기준과 전체 목록
+├── concepts.md                        # 자산 종류·개념, 의도적으로 없는 것들
+├── skill-management.md                # 스킬 소유권·배포 정책·상태 모델
+├── platform-mapping.md                # 파일 → 도구별 설치 경로 매핑
+├── device-setup.md                    # 새 기기 설정, doctor 해석
+├── inp-workflow.md                    # Innopam inp-* 스킬 흐름과 경계
+├── ntn-workflow.md                    # Notion ntn-* 스킬 흐름과 경계
+├── lc-workflow.md                     # 로컬 planning lc-* 스킬 흐름과 경계
+├── extending.md                       # 스킬/타깃/델타 추가 가이드
+└── archive/tasks/                     # 완료된 작업 카드 기록 (fork 시 삭제 무관)
+.github/MERGE_REQUIREMENTS.md
+.github/PULL_REQUEST_TEMPLATE.md
+```
+
+`inp-` 접두사는 Innopam 사내 Notion 작업·PR 워크플로를 뜻한다.
 
 `ntn-` 접두사는 Notion 전용 작업·PR 워크플로를 뜻한다. 범용 스킬과 이름이 충돌하지 않도록 Notion의 `TSK-*` 작업을 다루는 스킬에만 사용한다.
 
@@ -169,7 +192,9 @@ skills:
 
 ## 문서
 
+- [docs/repo-layout.md](docs/repo-layout.md) — 배포 자산·하네스·리포 전용 설정·문서 네 계층의 판별 기준과 목록
 - [docs/concepts.md](docs/concepts.md) — 스킬·커맨드·에이전트·훅·MCP·플러그인 개념 구분과 이 리포의 채택 여부
+- [docs/inp-workflow.md](docs/inp-workflow.md) — Innopam `inp-*` 스킬의 단계별 흐름, 경계, 종료 지점
 - [docs/ntn-workflow.md](docs/ntn-workflow.md) — Notion `ntn-*` 스킬의 단계별 흐름, 경계, 종료 지점
 - [docs/lc-workflow.md](docs/lc-workflow.md) — 로컬 planning `lc-*` 스킬의 단계별 흐름, 경계, 종료 지점
 - [docs/platform-mapping.md](docs/platform-mapping.md) — 리포 파일이 도구별로 어디에 설치되는지, 알려진 공백
