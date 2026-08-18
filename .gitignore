@@ -26,3 +26,4 @@
 *.local
 __pycache__/
 *.py[cod]
+.agents/skills/import-global-skill/settings.local.json

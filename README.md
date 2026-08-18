@@ -83,7 +83,9 @@ ai-tools-config/
 │   ├── ntn-review-pr/
 │   ├── ntn-spec-task/
 │   ├── ntn-start-task/
-│   └── clarify/                       # + references/depth-patterns.md
+│   ├── align-intent/                  # 실행 전 의도 정렬 게이트
+│   ├── clarify/                       # + references/depth-patterns.md
+│   └── semantic-commits/              # 변경을 의미 단위로 나눠 커밋
 ├── .agents/skills/
 │   ├── import-global-skill/            # 이 리포에서만 사용하는 프로젝트 전용 스킬
 │   └── notion-save/                    # 프로젝트 로컬 Notion MCP 기반 저장 스킬
