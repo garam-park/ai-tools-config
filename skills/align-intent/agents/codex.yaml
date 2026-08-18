@@ -1,0 +1,4 @@
+interface:
+  display_name: "의도 정렬"
+  short_description: "작업 전에 이해한 의도를 되돌려 말하고 사용자와 맞춥니다"
+  default_prompt: "$align-intent를 사용해서 내가 뭘 원하는지 어떻게 이해했는지 먼저 말해줘."

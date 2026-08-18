@@ -83,6 +83,7 @@ ai-tools-config/
 │   ├── ntn-review-pr/
 │   ├── ntn-spec-task/
 │   ├── ntn-start-task/
+│   ├── align-intent/                  # 실행 전 의도 정렬 게이트
 │   └── clarify/                       # + references/depth-patterns.md
 ├── .agents/skills/
 │   ├── import-global-skill/            # 이 리포에서만 사용하는 프로젝트 전용 스킬
