@@ -1,0 +1,4 @@
+interface:
+  display_name: "의미별 커밋"
+  short_description: "작업 트리 변경을 의미 단위로 나눠 여러 커밋으로 만듭니다"
+  default_prompt: "$semantic-commits를 사용해 현재 변경사항을 의미별로 나눠 커밋해줘."
