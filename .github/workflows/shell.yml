@@ -1,9 +1,9 @@
 name: CI
 
+# PR 검사는 merge-requirements.yml이 담당한다. 여기서 중복 실행하지 않는다.
 on:
   push:
-    branches: [main, develop]
-  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
