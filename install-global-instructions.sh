@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # install-global-instructions.sh
 #
-# 원본: ~/ai-tools-config/global-instructions/
+# 원본: 이 스크립트 옆의 global-instructions/
 #   - common.md (모든 도구 공통)
-#   - claude.md / codex.md / opencode.md (도구별 델타, 선택)
+#   - claude.md / codex.md / copilot.md / opencode.md (도구별 델타, 선택)
 # 각 도구의 글로벌 지침 경로에 common.md + 도구별 파일을 결합해 동기화.
 # 멱등성 보장: 여러 번 실행해도 같은 결과.
 #
@@ -204,54 +204,6 @@ fi
 
 if [[ ! -f "$COMMON" ]]; then
   echo "오류: $COMMON 이 없습니다." >&2
-  exit 1
-fi
-
-# doctor: 아무것도 변경하지 않고 동기화 상태만 검사한다.
-if [[ "$CMD" == "doctor" ]]; then
-  problems=0
-  for entry in "${TARGETS[@]}"; do
-    dest="${entry%%|*}"
-    src_name="${entry##*|}"
-
-    write_target="$dest"
-    if [[ -L "$dest" ]]; then
-      if resolved="$(resolve_symlink_target "$dest" 2>/dev/null)" && [[ -n "$resolved" ]]; then
-        write_target="$resolved"
-      else
-        echo "problem: $dest — 심볼릭 링크를 해석할 수 없습니다 (순환 의심)."
-        problems=$((problems + 1))
-        continue
-      fi
-    fi
-
-    if [[ -f "$write_target" ]]; then
-      if ! grep -qF "$MARKER" "$write_target"; then
-        echo "problem: $dest — 자동 생성 마커가 없습니다 (사용자 작성 파일, install 시 백업 후 교체)."
-        problems=$((problems + 1))
-      elif ! cmp -s <(render_expected "$src_name") "$write_target"; then
-        echo "problem: $dest — 내용이 원본과 다릅니다. install을 다시 실행하세요."
-        problems=$((problems + 1))
-      elif [[ -f "$SRC/$src_name" ]]; then
-        echo "ok: $dest (common + $src_name)"
-      else
-        echo "ok: $dest (common only)"
-      fi
-    elif [[ -e "$write_target" ]]; then
-      echo "problem: $dest — 대상이 일반 파일이 아닙니다: $write_target"
-      problems=$((problems + 1))
-    else
-      echo "problem: $dest — 파일이 없습니다. install을 실행하세요."
-      problems=$((problems + 1))
-    fi
-  done
-
-  echo
-  if [[ "$problems" -eq 0 ]]; then
-    echo "doctor: 문제 없음."
-    exit 0
-  fi
-  echo "doctor: ${problems}개 문제 발견. ./install-global-instructions.sh 를 실행해 동기화하세요."
   exit 1
 fi
 
