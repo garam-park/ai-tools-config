@@ -61,6 +61,6 @@
 
 - [x] **Copilot 글로벌 지침 경로 검증 (2026-07-15)**: GitHub Copilot CLI `~/.copilot/copilot-instructions.md`가 공식 지원됨을 확인. `global-instructions/copilot.md` 신설, `install-global-instructions.sh`의 `TARGETS`에 4번째 엔트리 추가, 테스트 갱신, [docs/platform-mapping.md](docs/platform-mapping.md) 외부 문서 링크 추가. **VS Code / JetBrains / 웹 Copilot Chat에는 글로벌 지침 파일 메커니즘이 없음** — 그 부분은 의도적 공백으로 유지.
 - [x] **CI `agents-integrity` 강화 (2026-07-15)**: `skills/*/SKILL.md`가 있는 모든 스킬에 대해 `agents/codex.yaml` 존재를 검사하는 루프로 교체. 옛 `agents/openai.yaml` 부재도 함께 검사. [docs/extending.md](docs/extending.md)의 후속 작업 주석도 갱신.
-- [ ] **CI에 macOS 러너 추가 검토**: 현재 `ubuntu-latest`만 실행. bash 3.2/macOS 특이 동작은 로컬에서만 검증되고 있다.
-- [ ] **오래된 병렬 브랜치 정리**: 1차 사이클의 `claude`, `codex`, `m3`, `total`, `develop`, `chore/consolidate-local-skills` — 머지 완료분은 삭제 검토.
+- [x] **CI에 macOS 러너 추가 (2026-08-25)**: `merge-requirements.yml`의 shell-and-tests를 `ubuntu-latest` + `macos-latest` 매트릭스로 전환. macOS 러너는 Docker 컨테이너 액션을 지원하지 않아 shellcheck는 brew 설치 후 직접 실행한다.
+- [x] **오래된 병렬 브랜치 정리 (2026-08-25)**: 머지 완료·대체된 브랜치(`develop`, `feat/lc-skills`, `feat/skill-management-and-notion-mcp`, `backup-main-before-date-fix`, `claude/hermes-agent-skills-v0q9z7`) 삭제. CI 트리거도 `main` 전용으로 축소.
 - [ ] **훅/MCP 도입 시 설계 선행**: 도입하게 되면 도구별 설정 포맷 매핑 문서를 먼저 작성 ([docs/concepts.md](docs/concepts.md)의 도입 기준 참조).
