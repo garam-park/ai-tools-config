@@ -7,7 +7,7 @@
 
 - 어떤 에이전트도 이 조건을 "판정"하지 않는다. CI가 자동 검사하고, 사람이 최종 승인한다.
 - 조건을 만족하지 못한 상태에서 머지하려고 하면 CI가 차단한다.
-- 자동화된 검사 항목은 [`.github/workflows/shell.yml`](../.github/workflows/shell.yml)에 정의되어 있다.
+- 자동화된 검사 항목은 PR 검사용 [`.github/workflows/merge-requirements.yml`](../.github/workflows/merge-requirements.yml)과 main push 검사용 [`.github/workflows/shell.yml`](../.github/workflows/shell.yml)에 정의되어 있다.
 
 ---
 
@@ -16,8 +16,8 @@
 | ID | 검사 | 판정 기준 | 실패 시 |
 |----|------|-----------|---------|
 | M-1.1 | ShellCheck | `shellcheck --severity=warning bootstrap.sh install-skills.sh install-global-instructions.sh tests/installers_test.sh` exit 0 | PR 차단 |
-| M-1.2 | 설치 테스트 | `bash tests/installers_test.sh` exit 0 | PR 차단 |
-| M-1.3 | 커밋 메시지 규약 | 작업 카드 관련 커밋이 `(task NN)` 또는 `(tasks NN,MM)` 토큰을 가짐 ([docs/archive/tasks/STATUS.md](../docs/archive/tasks/STATUS.md) 규약) | 경고 → 운영자 판단 |
+| M-1.2 | 설치 테스트 | `bash tests/installers_test.sh` exit 0 (ubuntu-latest + macos-latest 매트릭스) | PR 차단 |
+| M-1.3 | 커밋 메시지 규약 | (은퇴 — 2026-08-25) 작업 카드가 아카이브되어 새 토큰이 생기지 않으므로 경고만 반복되던 advisory 검사를 제거함 | — |
 | M-1.4 | 작업 카드 위치 | (은퇴 — 2026-07-15) 작업 카드가 `docs/archive/tasks/`로 아카이브되어 검사 대상이 없음 | — |
 | M-1.5 | AI 트레일러 부재 | 커밋 메시지에 `Co-Authored-By: Claude`, `Generated with Claude Code` 등 AI 푸터 없음 | PR 차단 |
 | M-1.6 | agents 디렉토리 무결성 | `agents/codex.yaml` 존재 + `agents/openai.yaml` 부재 | PR 차단 |
@@ -55,14 +55,21 @@ PR 본문은 [`.github/PULL_REQUEST_TEMPLATE.md`](../.github/PULL_REQUEST_TEMPLA
 
 ## 자동 검증 스크립트
 
-다음 명령으로 M-1.1, M-1.2, M-1.3, M-1.5, M-1.6을 로컬에서 검증할 수 있다:
+다음 명령으로 M-1.1, M-1.2, M-1.5, M-1.6을 로컬에서 검증할 수 있다:
 
 ```bash
 bash tests/installers_test.sh
 shellcheck --severity=warning bootstrap.sh install-skills.sh install-global-instructions.sh tests/installers_test.sh
-git log main..HEAD --pretty='%s' | grep -vE '\(tasks? [0-9, \-]+\)' && echo "경고: 작업 토큰 없는 커밋 — 작업 카드 관련이면 토큰 추가" || echo "OK"
 git log main..HEAD --pretty='%s' | grep -iE 'co-authored-by|generated with' && echo "FAIL: AI 트레일러" || echo "OK"
-test -f skills/paced-explainer/agents/codex.yaml && ! -e skills/paced-explainer/agents/openai.yaml && echo "OK" || echo "FAIL"
+missing=0
+for root in skills .agents/skills; do
+  [[ -d "$root" ]] || continue
+  for d in "$root"/*/; do
+    [[ -f "${d}SKILL.md" ]] || continue
+    [[ -f "${d}agents/codex.yaml" && ! -e "${d}agents/openai.yaml" ]] || { echo "FAIL: $d"; missing=1; }
+  done
+done
+[[ "$missing" -eq 0 ]] && echo "OK"
 ```
 
 ---
@@ -73,3 +80,5 @@ test -f skills/paced-explainer/agents/codex.yaml && ! -e skills/paced-explainer/
 - 2026-07-14: M-1.3을 경고성(advisory)으로 완화 — 토큰 규약은 작업 카드 관련 커밋에만 적용되므로([docs/archive/tasks/STATUS.md](../docs/archive/tasks/STATUS.md)) 전 커밋 차단은 과잉 강제
 - 2026-07-15: 작업 카드가 `docs/archive/tasks/`로 아카이브되어 M-1.4 은퇴, M-2에서 작업 카드 항목 제거
 - 2026-07-15: M-1.1 검사 대상에 `bootstrap.sh` 추가
+- 2026-08-25: M-1.3 은퇴 (작업 카드 아카이브 이후 경고만 반복되는 소음), 자동 검증 스크립트의 존재하지 않는 스킬(`paced-explainer`) 예시를 전 스킬 검사 루프로 교체
+- 2026-08-25: M-1.1/M-1.2를 macos-latest 러너로도 실행 (bash 3.2 회귀 방지), 중복되던 `shell.yml`의 PR 트리거 제거
