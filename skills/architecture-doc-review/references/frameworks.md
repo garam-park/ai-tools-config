@@ -28,7 +28,7 @@
 | --- | --- | --- |
 | [TOGAF ADM](#1-togaf) | 엔터프라이즈 전체 | Business / Data / Application / Technology 4계층 |
 | [AWS Well-Architected](#2-aws-well-architected) | 클라우드 워크로드 | 6개 기둥 (운영·보안·신뢰성·성능·비용·지속가능성) |
-| [Kruchten 4+1 View](#3-kruchten-4+1-view) | 다중 관점 | Logical / Development / Process / Physical + Scenarios |
+| [Kruchten 4+1 View](#3-kruchten-41-view) | 다중 관점 | Logical / Development / Process / Physical + Scenarios |
 | [C4 Model](#4-c4-model) | 다이어그램 추상화 | Context / Container / Component / Code 4단계 |
 | [IEEE 1471 / ISO 42010](#5-ieee-1471--iso-42010) | 문서 구조 | Stakeholder → Concern → Viewpoint → View |
 | [12-Factor App](#6-12-factor-app) | 애플리케이션 | 코드·의존성·설정·프로세스·로그 등 12요인 |
