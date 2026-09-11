@@ -50,6 +50,149 @@ error() {
   echo "error: $*" >&2
 }
 
+# Hermes Agent는 ~/.hermes/config.yaml의 skills.external_dirs에
+# 공통 경로(~/.agents/skills)를 등록해야 공통 Agent Skills 경로를 읽는다.
+# 사용자 설정 파일을 직접 건드리므로, ~/.hermes/ 또는 config.yaml이
+# 없으면 건너뛰고(아직 Hermes를 쓰지 않는 사용자 보존), 사용자가 다른
+# external_dirs를 갖고 있어도 기존 항목을 건드리지 않는다.
+HERMES_CONFIG="$HOME/.hermes/config.yaml"
+HERMES_DIR_KEY="skills.external_dirs"
+
+# $path 안에 `skills:` 아래 들여쓴 `external_dirs:` 의 항목이 이미 등록돼 있는지.
+# ~/.agents/skills 와 같거나 같은 절대경로로 확장되는 항목이 있으면 0, 없으면 1.
+# 이 함수는 키 체인이 항상 2단계라는 사실에 의존한다.
+hermes_dir_registered() {
+  local path="$1"
+
+  local stripped
+  stripped="$(
+    awk '
+      # 빈 줄·주석 무시
+      /^[[:space:]]*$/ { next }
+      /^[[:space:]]*#/ { next }
+
+      # 최상위 `skills:` 에 진입
+      /^skills:[[:space:]]*(#.*)?$/ {
+        in_skills = 1
+        next
+      }
+
+      # skills: 블록 밖이면 더 볼 것 없음
+      !in_skills { next }
+
+      # skills: 블록 안, 들여쓰기 2의 키를 만나면
+      /^[[:space:]]{2}[A-Za-z_]/ {
+        key = $0
+        sub(/^[[:space:]]+/, "", key)
+        sub(/:.*/, "", key)
+        if (key == "external_dirs") {
+          # 다음 줄부터 항목 모으기 시작
+          collecting = 1
+        } else {
+          # 다른 키가 나오면 종료 (혹은 계속 무시)
+          if (collecting) exit
+        }
+        next
+      }
+
+      # 항목 모으는 중, 들여쓰기 4의 `-` 항목만 출력
+      collecting && /^[[:space:]]{4}-/ {
+        print
+        next
+      }
+
+      # 그 외 (들여쓰기 0 줄, 빈 줄 등은 수집 중이면 종료)
+      collecting { exit }
+    ' "$path"
+  )"
+
+  if [[ -z "$stripped" ]]; then
+    return 1
+  fi
+
+  # 등록된 경로 중 ~/.agents/skills 와 같거나, 같은 절대경로로 확장되는 항목이 있는지
+  local entry abs
+  while IFS= read -r entry; do
+    # 선행 공백 모두 제거 (POSIX: 가장 긴 공백 접두사 매칭 후 절삭)
+    entry="${entry#"${entry%%[![:space:]]*}"}"
+    # '- ' 또는 '-'로 시작하면 dash 제거
+    [[ "$entry" == -* ]] && entry="${entry:1}"
+    entry="${entry## }"
+    entry="${entry%%#*}"
+    entry="${entry## }"
+    [[ -z "$entry" ]] && continue
+    # ~, 따옴표, 끝 콤마 제거
+    entry="${entry%\"}"
+    entry="${entry#\"}"
+    entry="${entry%\'}"
+    entry="${entry#\'}"
+    entry="${entry%,}"
+    entry="${entry## }"
+    abs="$entry"
+    [[ "$abs" == "~"* ]] && abs="$HOME${abs#\~}"
+    if [[ "$abs" == "$HOME/.agents/skills" ]]; then
+      return 0
+    fi
+  done <<< "$stripped"
+
+  return 1
+}
+
+# Hermes에 공통 경로를 등록. 이미 등록돼 있거나 대상 파일이 없으면 0,
+# 실패하면 1. 메시지는 stdout으로 안내용.
+ensure_hermes_external_dirs() {
+  if [[ ! -f "$HERMES_CONFIG" ]]; then
+    echo "  - Hermes Agent: ~/.hermes/config.yaml 이(가) 없어 건너뜁니다 (나중에 Hermes를 설치하면 자동으로 다시 시도)."
+    return 0
+  fi
+
+  if hermes_dir_registered "$HERMES_CONFIG"; then
+    echo "  - Hermes Agent: skills.external_dirs 에 이미 등록됨"
+    return 0
+  fi
+
+  if [[ ! -w "$HERMES_CONFIG" ]]; then
+    warn "Hermes 설정 파일에 쓸 수 없습니다: $HERMES_CONFIG"
+    return 1
+  fi
+
+  local tmp
+  tmp="$(mktemp "${HERMES_CONFIG}.XXXXXX")"
+
+  # 기존 skills: 블록이 있고 그 안에 external_dirs 가 없으면 그 안에 추가.
+  # skills: 블록이 있고 그 안에 이미 external_dirs 가 있으면 (이미 등록돼 있음 → 위 분기에서 종료).
+  # skills: 블록이 없으면 파일 끝에 새 키 추가.
+  if grep -qE "^skills:" "$HERMES_CONFIG"; then
+    awk -v path='  external_dirs:' '
+      {
+        print
+        if (!done && $1 == "skills:") {
+          printf "%s\n", path
+          printf "    - ~/.agents/skills\n"
+          done=1
+        }
+      }
+    ' "$HERMES_CONFIG" > "$tmp"
+  else
+    cat "$HERMES_CONFIG" > "$tmp"
+    [[ -s "$tmp" && "$(tail -c1 "$tmp")" != $'\n' ]] && printf '\n' >> "$tmp"
+    {
+      echo "skills:"
+      echo "  external_dirs:"
+      echo "    - ~/.agents/skills"
+    } >> "$tmp"
+  fi
+
+  if ! mv "$tmp" "$HERMES_CONFIG"; then
+    rm -f "$tmp"
+    warn "Hermes 설정 파일을 갱신할 수 없습니다: $HERMES_CONFIG"
+    return 1
+  fi
+
+  echo "  - Hermes Agent: skills.external_dirs 에 ~/.agents/skills 추가"
+  return 0
+}
+
 is_known_target() {
   local candidate="$1"
   local target
@@ -323,6 +466,17 @@ if [[ "$CMD" == "doctor" ]]; then
     echo "선택 제외(검사 안 함): $(join_names "${excluded_names[@]}")"
     echo
   fi
+
+  # Hermes Agent 설정 점검: ~/.agents/skills가 skills.external_dirs에 등록돼 있어야 함
+  echo "[$HERMES_CONFIG]"
+  if [[ ! -f "$HERMES_CONFIG" ]]; then
+    echo "  skip: 파일이 없습니다 (Hermes를 아직 설치하지 않았을 수 있음)"
+  elif hermes_dir_registered "$HERMES_CONFIG"; then
+    report_ok "skills.external_dirs 에 ~/.agents/skills 등록됨"
+  else
+    report_problem "skills.external_dirs 에 ~/.agents/skills 가 등록되지 않았습니다 (install을 실행하면 추가 시도)"
+  fi
+  echo
 
   if [[ "$problem_count" -eq 0 ]]; then
     echo "doctor: 문제 없음 (${ok_count}개 링크 확인)."
@@ -598,7 +752,9 @@ echo "  - Claude Code: ~/.claude/skills"
 echo "  - Codex: ~/.agents/skills"
 echo "  - GitHub Copilot: ~/.agents/skills"
 echo "  - OpenCode: ~/.agents/skills"
-echo "  - Hermes Agent: ~/.agents/skills (~/.hermes/config.yaml skills.external_dirs 등록 필요)"
+
+# Hermes는 사용자 설정 파일을 건드리는 작업이므로 별도 안내 + 시도.
+ensure_hermes_external_dirs || failures=$((failures + 1))
 
 if [[ "$failures" -gt 0 ]]; then
   error "${failures}개 항목을 설치하지 못했습니다. 위 경고를 확인하세요."
